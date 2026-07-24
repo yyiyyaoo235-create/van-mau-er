@@ -1,0 +1,2042 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>拼音入门 · Ngữ Âm Nhập Môn Tiếng Trung</title>
+<style>
+/* ============================================================
+   DESIGN TOKENS
+============================================================ */
+:root{
+  --red:        #FF7E94;
+  --red-dark:   #E8536F;
+  --red-soft:   #FFEEF1;
+  --gold:       #ACD9F7;
+  --gold-dark:  #2E86C1;
+  --gold-soft:  #EAF6FF;
+  --jade:       #6CC6AA;
+  --jade-dark:  #2F8A6E;
+  --jade-soft:  #E7F7F1;
+  --navy:       #6A46B8;
+  --navy-soft:  #F1ECFB;
+  --paper:      #FFFDF8;
+  --paper-2:    #FAF7FA;
+  --ink:        #353435;
+  --ink-soft:   #726F72;
+  --line:       #ECE6EC;
+  --shadow:     rgba(90, 70, 110, .13);
+
+  --font-vn: 'Times New Roman', Times, 'Noto Serif', serif;
+  --font-zh: 'KaiTi', 'STKaiti', '楷体', 'Kaiti SC', 'BiauKai', serif;
+  --header-h: 50px;
+}
+
+*{ box-sizing:border-box; }
+html,body{ height:auto; min-height:100%; }
+body{
+  margin:0;
+  font-family:var(--font-vn);
+  color:var(--ink);
+  line-height:1.65;
+  -webkit-font-smoothing:antialiased;
+  text-rendering:optimizeLegibility;
+  background:
+    radial-gradient(1200px 700px at 100% -10%, var(--gold-soft) 0%, transparent 55%),
+    radial-gradient(1000px 600px at -10% 110%, var(--jade-soft) 0%, transparent 50%),
+    var(--paper);
+  overflow-x:hidden;
+}
+.zh{ font-family:var(--font-zh); }
+.latin{ font-family:var(--font-vn) !important; }
+::selection{ background:var(--gold-soft); }
+button{ font-family:inherit; }
+
+/* subtle paper texture / cloud motif */
+.cloud-motif{
+  position:fixed; inset:0; pointer-events:none; z-index:0; opacity:.06;
+  background-image:
+    repeating-linear-gradient(45deg, var(--red) 0 2px, transparent 2px 40px);
+}
+
+/* ============================================================
+   LAYOUT SHELL — header is FIXED (stays on screen while scrolling)
+============================================================ */
+.app{
+  position:relative; z-index:1;
+  min-height:100vh;
+  display:flex;
+  flex-direction:column;
+}
+
+/* ---------- HEADER (compact, fixed to top) ---------- */
+.app-header{
+  position:fixed;
+  top:0; left:0; right:0;
+  height:var(--header-h);
+  padding:8px 14px;
+  background:linear-gradient(135deg, var(--red) 0%, var(--red-dark) 100%);
+  color:#fff;
+  display:flex;
+  align-items:center;
+  gap:12px;
+  box-shadow:0 2px 10px var(--shadow);
+  flex:0 0 auto;
+  overflow:hidden;
+  min-height:0;
+  z-index:60;
+}
+.sidebar-toggle{
+  flex:0 0 auto;
+  width:34px; height:34px; border-radius:9px;
+  border:1.5px solid rgba(255,255,255,.5);
+  background:rgba(255,255,255,.14);
+  color:#fff; font-size:15px; cursor:pointer;
+  display:flex; align-items:center; justify-content:center;
+  transition:background .15s ease;
+}
+.sidebar-toggle:hover{ background:rgba(255,255,255,.28); }
+.fullscreen-toggle{
+  flex:0 0 auto;
+  margin-left:auto;
+  width:34px; height:34px; border-radius:9px;
+  border:1.5px solid rgba(255,255,255,.5);
+  background:rgba(255,255,255,.14);
+  color:#fff; font-size:16px; cursor:pointer;
+  display:flex; align-items:center; justify-content:center;
+  transition:background .15s ease;
+}
+.fullscreen-toggle:hover{ background:rgba(255,255,255,.28); }
+.fullscreen-toggle svg{ width:18px; height:18px; }
+.fullscreen-toggle .icon-exit{ display:none; }
+.fullscreen-toggle.is-fullscreen .icon-enter{ display:none; }
+.fullscreen-toggle.is-fullscreen .icon-exit{ display:block; }
+.seal{
+  flex:0 0 auto;
+  width:32px; height:32px; border-radius:8px;
+  background:var(--gold);
+  border:1.5px solid rgba(255,255,255,.85);
+  display:flex; align-items:center; justify-content:center;
+  color:var(--red-dark);
+  font-family:var(--font-zh);
+  font-size:15px; font-weight:700;
+  box-shadow:0 2px 6px rgba(0,0,0,.22);
+}
+.header-title{
+  flex:1 1 auto; min-width:0;
+  margin:0; font-size:14px; line-height:1.2; font-weight:700;
+  white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+  text-shadow:0 1px 3px rgba(0,0,0,.18);
+}
+.header-title .zh{ font-size:15px; margin-right:5px; }
+
+/* ---------- BODY ROW (sidebar + main) ---------- */
+.body-row{ flex:1 1 auto; display:flex; align-items:flex-start; position:relative; margin-top:var(--header-h); }
+
+/* ---------- SIDEBAR (collapsible, left, sticky while page scrolls) ---------- */
+.sidebar{
+  flex:0 0 250px; width:250px;
+  background:var(--paper-2);
+  border-right:1px solid var(--line);
+  overflow-y:auto; overflow-x:hidden;
+  display:flex; flex-direction:column; gap:7px;
+  padding:14px 12px;
+  transition:flex-basis .22s ease, width .22s ease, padding .22s ease, box-shadow .22s ease;
+  white-space:nowrap;
+  position:sticky;
+  top:var(--header-h);
+  align-self:flex-start;
+  max-height:calc(100vh - var(--header-h));
+  z-index:30;
+}
+.sidebar.collapsed{ flex-basis:0; width:0; padding-left:0; padding-right:0; border-right-width:0; }
+.side-btn{
+  flex:0 0 auto;
+  display:flex; align-items:center; gap:10px;
+  padding:10px 12px;
+  border-radius:12px;
+  border:1.5px solid var(--line);
+  background:#fff;
+  cursor:pointer;
+  text-align:left;
+  transition:all .15s ease;
+}
+.side-btn:hover{ border-color:var(--gold); }
+.side-btn.active{
+  background:var(--red); border-color:var(--red);
+  box-shadow:0 4px 12px rgba(228,48,43,.32);
+}
+.side-num{
+  width:26px; height:26px; border-radius:50%;
+  background:var(--navy-soft); color:var(--navy);
+  font-size:12px; font-weight:700;
+  display:flex; align-items:center; justify-content:center;
+  flex:0 0 auto;
+}
+.side-btn.active .side-num{ background:#fff; color:var(--red); }
+.side-label{ display:flex; flex-direction:column; line-height:1.35; }
+.side-zh{ font-family:var(--font-zh); font-size:15px; color:var(--ink-soft); }
+.side-btn.active .side-zh{ color:var(--gold-soft); }
+.side-vn{ font-size:13.5px; font-weight:700; color:var(--ink); }
+.side-btn.active .side-vn{ color:#fff; }
+.side-desc{ font-size:11px; color:var(--ink-soft); margin-top:1px; white-space:normal; line-height:1.3; }
+.side-btn.active .side-desc{ color:rgba(255,255,255,.85); }
+
+.sidebar-backdrop{
+  display:none; position:fixed; top:var(--header-h); left:0; right:0; bottom:0; background:rgba(20,10,20,.4); z-index:40;
+}
+.sidebar-backdrop.show{ display:block; }
+
+@media (max-width:900px){
+  .sidebar{
+    position:fixed; top:var(--header-h); left:0; bottom:0; height:calc(100vh - var(--header-h)); max-height:none; z-index:50;
+    align-self:auto;
+    box-shadow:3px 0 24px rgba(0,0,0,.22);
+  }
+  .sidebar.collapsed{ box-shadow:none; }
+}
+
+/* ---------- SCROLL-TO-TOP BUTTON ---------- */
+.scroll-top-btn{
+  position:fixed;
+  right:22px; bottom:22px;
+  width:48px; height:48px;
+  border-radius:50%;
+  border:1.5px solid rgba(255,255,255,.6);
+  background:linear-gradient(135deg, var(--red) 0%, var(--red-dark) 100%);
+  color:#fff;
+  display:flex; align-items:center; justify-content:center;
+  cursor:pointer;
+  box-shadow:0 6px 16px var(--shadow);
+  z-index:45;
+  opacity:0;
+  visibility:hidden;
+  transform:translateY(12px) scale(.9);
+  transition:opacity .25s ease, transform .25s ease, visibility .25s, box-shadow .15s ease;
+}
+.scroll-top-btn.show{
+  opacity:1;
+  visibility:visible;
+  transform:translateY(0) scale(1);
+}
+.scroll-top-btn:hover{
+  box-shadow:0 8px 20px rgba(90,70,110,.24);
+  transform:translateY(-2px) scale(1.04);
+}
+.scroll-top-btn svg{ width:20px; height:20px; }
+@media (max-width:900px){
+  .scroll-top-btn{ right:16px; bottom:16px; width:44px; height:44px; }
+}
+
+/* ---------- MAIN / PANELS ---------- */
+.main{
+  flex:1 1 auto;
+  min-width:0;
+  position:relative;
+}
+.panel{
+  padding:26px 30px 60px;
+  display:none;
+}
+.panel.active{ display:block; animation:fadeUp .35s ease; }
+@keyframes fadeUp{ from{opacity:0; transform:translateY(8px);} to{opacity:1; transform:translateY(0);} }
+
+.panel-head{
+  display:flex; align-items:baseline; gap:12px; margin-bottom:18px; flex-wrap:wrap;
+}
+.panel-head .num{
+  font-family:var(--font-zh); font-size:20px; color:#fff;
+  background:var(--navy); padding:4px 12px; border-radius:8px 8px 8px 0;
+}
+.panel-head h2{
+  margin:0; font-size:29px; color:var(--navy);
+  display:flex; align-items:baseline; gap:10px;
+}
+.panel-head h2 .zh{ font-size:32px; color:var(--red); }
+.panel-head .badge{
+  margin-left:auto;
+  font-size:17.5px; font-weight:700; color:var(--jade-dark);
+  background:var(--jade-soft); border:1px solid var(--jade);
+  padding:4px 10px; border-radius:999px;
+}
+.panel-lead{
+  color:var(--ink-soft); font-size:20px; margin:-8px auto 20px; max-width:900px; text-align:center;
+}
+
+/* ---------- KHUNG / CARD FRAMES ---------- */
+.frame{
+  background:#fff;
+  border:1px solid var(--line);
+  border-radius:14px;
+  padding:18px 20px;
+  margin-bottom:20px;
+  box-shadow:0 2px 10px var(--shadow);
+  position:relative;
+  scroll-margin-top:calc(var(--header-h) + 14px);
+}
+.frame.accent-red{ border-left:6px solid var(--red); }
+.frame.accent-gold{ border-left:6px solid var(--gold); }
+.frame.accent-jade{ border-left:6px solid var(--jade); }
+.frame.accent-navy{ border-left:6px solid var(--navy); }
+
+/* ---------- QUICK-NAV (mục lục nhỏ dẫn tới từng khung nội dung) ---------- */
+.quick-nav{
+  display:flex; flex-wrap:wrap; justify-content:center; gap:8px;
+  margin:6px 0 22px;
+}
+.quick-nav-btn{
+  display:inline-flex; align-items:center; gap:6px;
+  border:1.5px solid var(--line); background:var(--paper-2);
+  border-radius:999px; padding:6px 13px;
+  font-family:var(--font-vn); font-size:13.5px; font-weight:700; color:var(--ink);
+  cursor:pointer; transition:all .15s ease;
+}
+.quick-nav-btn:hover{ border-color:var(--gold-dark); background:#fff; transform:translateY(-1px); }
+.quick-nav-btn .dot{ width:9px; height:9px; border-radius:50%; flex:0 0 auto; }
+
+.frame h3{
+  margin:0 0 10px; font-size:22px; color:var(--navy);
+  display:flex; align-items:center; gap:8px;
+}
+.frame h3 .zh{ color:var(--red); font-size:24px; }
+.frame p{ margin:6px 0; line-height:1.65; font-size:19.5px; }
+.frame p.zh-line{ font-family:var(--font-zh); font-size:21px; color:var(--ink); background:var(--paper-2); padding:8px 12px; border-radius:8px; }
+
+.two-col{ display:grid; grid-template-columns:1fr 1fr; gap:18px; }
+.grid-cards{ display:grid; grid-template-columns:repeat(auto-fit, minmax(190px,190px)); gap:16px; justify-content:center; }
+.chip-video-box{ width:100%; aspect-ratio:3/4; border-radius:10px; overflow:hidden; background:#111; margin-bottom:10px; position:relative; }
+.chip-video-box video{ width:100%; height:100%; object-fit:cover; display:block; background:#000; }
+.chip-video-placeholder{
+  width:100%; height:100%; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:8px;
+  background:var(--paper-2); border:1.5px dashed var(--line); cursor:pointer; color:var(--ink-soft); text-align:center; padding:8px;
+  transition:all .15s ease;
+}
+.chip-video-placeholder:hover{ border-color:var(--gold-dark); background:var(--gold-soft); }
+.chip-video-placeholder .cvp-icon{ font-size:30px; }
+.chip-video-placeholder .cvp-text{ font-size:13px; line-height:1.4; }
+
+/* ---------- SOUND CHIP (thanh mẫu / vận mẫu) ---------- */
+.chip{
+  background:var(--paper-2);
+  border:1.5px solid var(--line);
+  border-radius:12px;
+  padding:12px 10px;
+  text-align:center;
+  cursor:default;
+  transition:all .15s ease;
+  position:relative;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  width:100%;
+}
+.chip:hover{ border-color:var(--gold); }
+.chip:active{ transform:translateY(0); }
+.chip .main-sym{ font-size:29px; font-weight:700; color:var(--red-dark); font-family:var(--font-vn); text-align:center; }
+.chip .demo{ font-size:17.5px; color:var(--ink-soft); margin-top:2px; text-align:center; }
+.chip .tip{ font-size:16.5px; color:var(--jade-dark); margin-top:6px; line-height:1.4; text-align:center; }
+.chip.collapsible .tip{ display:none; margin-top:8px; }
+.chip.collapsible.open .tip{ display:block; }
+.chip .spk{ position:absolute; top:6px; right:8px; font-size:18px; opacity:.55; }
+
+/* smaller, tappable toggle card to reveal the reading tip */
+.tip-toggle{
+  margin-top:10px;
+  border:1.5px solid var(--jade-dark);
+  color:var(--jade-dark);
+  background:#fff;
+  border-radius:999px;
+  padding:5px 14px;
+  font-size:13.5px;
+  font-family:var(--font-vn);
+  font-weight:700;
+  cursor:pointer;
+  display:inline-flex;
+  align-items:center;
+  gap:5px;
+  transition:all .15s ease;
+}
+.tip-toggle:hover{ background:var(--jade-soft); }
+.tip-toggle .chev{ display:inline-block; transition:transform .2s ease; font-size:11px; }
+.chip.open .tip-toggle .chev{ transform:rotate(180deg); }
+
+.group-title{
+  display:flex; align-items:center; justify-content:center; gap:10px; margin:22px 0 10px; text-align:center;
+}
+.group-title:first-of-type{ margin-top:4px; }
+.group-title .dot{ width:12px; height:12px; border-radius:3px; flex:0 0 auto; }
+.group-title h4{ margin:0; font-size:20.5px; color:var(--navy); }
+.group-title h4 .zh{ color:inherit; font-size:21px; }
+.group-title .desc{ font-size:17.5px; color:var(--ink-soft); margin-left:6px; }
+
+/* ---------- WORD CARD (vocab with emoji) ---------- */
+.word-grid{ display:grid; grid-template-columns:repeat(auto-fill, minmax(150px,1fr)); gap:14px; }
+.word-grid-pic{ grid-template-columns:repeat(4, 1fr); gap:18px; }
+.word-grid-pic .word-card{ padding:22px 14px 18px; }
+.word-grid-pic .word-card .emoji{ font-size:53px; margin-bottom:10px; }
+.word-grid-pic .word-card .hz{ font-size:34px; }
+.word-grid-pic .word-card .py{ font-size:19px; margin-top:6px; }
+.word-grid-pic .word-card .vn{ font-size:17px; margin-top:4px; }
+.word-grid-pic .word-card .spk-btn{ font-size:14px; padding:5px 13px; margin-top:12px; }
+@media (max-width:900px){
+  .word-grid-pic{ grid-template-columns:repeat(2, 1fr); }
+}
+.word-card{
+  background:#fff; border:1.5px solid var(--line); border-radius:16px;
+  padding:14px 10px 12px; text-align:center; cursor:pointer;
+  transition:all .15s ease;
+}
+.word-card:hover{ border-color:var(--red); transform:translateY(-4px); box-shadow:0 10px 18px var(--shadow); }
+.word-card .emoji{ font-size:39px; line-height:1; margin-bottom:6px; }
+.word-card .hz{ font-family:var(--font-zh); font-size:27px; color:var(--red-dark); }
+.word-card .py{ font-size:19px; color:var(--navy); font-weight:700; margin-top:2px; }
+.word-card .vn{ font-size:17.5px; color:var(--ink-soft); margin-top:2px; }
+.word-card .spk-btn{
+  margin-top:8px; display:inline-flex; align-items:center; gap:4px;
+  font-size:16px; color:var(--jade-dark); background:var(--jade-soft);
+  padding:3px 9px; border-radius:999px;
+}
+
+/* ---------- TONE DRILL ---------- */
+.tone-set-grid{ display:grid; grid-template-columns:repeat(auto-fill, minmax(230px,1fr)); gap:14px; }
+#tone-drill-simple{ grid-template-columns:repeat(2, minmax(230px,320px)); justify-content:center; }
+#single-drill-grid{ grid-template-columns:repeat(2, minmax(230px,320px)); justify-content:center; }
+.tone-set{
+  background:#fff; border:1.5px solid var(--line); border-radius:14px; padding:12px;
+}
+.tone-set .row{ display:grid; grid-template-columns:repeat(4,1fr); gap:6px; }
+.tone-syll{
+  border-radius:10px; padding:8px 4px; text-align:center; cursor:pointer;
+  border:1.5px solid transparent; transition:all .15s ease;
+}
+.tone-syll:hover{ transform:translateY(-2px); filter:brightness(1.03); }
+.tone-syll .py{ font-weight:700; font-size:20px; }
+.tone-syll .hz{ font-family:var(--font-zh); font-size:19px; opacity:.8; }
+.tone1{ background:var(--red-soft); color:var(--red-dark); }
+.tone2{ background:var(--gold-soft); color:var(--gold-dark); }
+.tone3{ background:var(--jade-soft); color:var(--jade-dark); }
+.tone4{ background:var(--navy-soft); color:var(--navy); }
+
+/* ---------- FLASHCARD (xem hình từng thẻ) ---------- */
+.flashcard-wrap{ max-width:300px; margin:0 auto; text-align:center; }
+.flashcard-progress{ font-size:14.5px; font-weight:700; color:var(--ink-soft); margin-bottom:10px; }
+.word-card.word-card-flash{
+  padding:30px 18px 22px; cursor:pointer;
+}
+.word-card-flash .emoji{ font-size:64px; margin-bottom:12px; }
+.word-card-flash .hz{ font-size:42px; }
+.word-card-flash .py{ font-size:22px; margin-top:8px; }
+.word-card-flash .vn{ font-size:19px; margin-top:4px; }
+.word-card-flash .spk-btn{ font-size:16px; padding:6px 14px; margin-top:14px; }
+.flashcard-nav{ display:flex; justify-content:center; gap:8px; margin-top:16px; flex-wrap:wrap; }
+.flashcard-nav .btn{ font-size:15px; padding:7px 14px; }
+
+/* ---------- DRAW DRILL (luyện đọc bốc thăm) ---------- */
+.draw-wrap{ max-width:380px; margin:0 auto; text-align:center; }
+.draw-progress{ font-size:14.5px; font-weight:700; color:var(--ink-soft); margin-bottom:10px; }
+.draw-progress .bar{ height:6px; border-radius:99px; background:var(--line); margin-top:6px; overflow:hidden; }
+.draw-progress .bar-fill{ height:100%; background:var(--gold-dark); border-radius:99px; transition:width .25s ease; }
+.draw-set{ padding:18px 14px; }
+.draw-set .row{ display:grid; grid-template-columns:repeat(4,1fr); gap:8px; }
+.draw-set .tone-syll .py{ font-size:23px; }
+.draw-set .tone-syll .hz{ font-size:21px; }
+.draw-nav{ display:flex; justify-content:center; gap:8px; margin-top:16px; flex-wrap:wrap; }
+.draw-nav .btn{ font-size:15px; padding:7px 14px; }
+.draw-done{ padding:26px 18px; text-align:center; }
+.draw-done .dd-icon{ font-size:44px; margin-bottom:8px; }
+.draw-done .dd-text{ font-size:17px; font-weight:700; color:var(--jade-dark); }
+
+/* ---------- TONE PITCH CARDS ---------- */
+.tone-cards{ display:grid; grid-template-columns:repeat(auto-fit,minmax(210px,1fr)); gap:16px; margin-bottom:6px; }
+.tone-card{
+  background:#fff; border:1.5px solid var(--line); border-radius:16px; padding:16px;
+  text-align:center; position:relative; overflow:hidden;
+}
+.tone-card .label{ font-size:17.5px; color:var(--ink-soft); margin-bottom:4px; }
+.tone-card .value{ font-size:16px; color:var(--ink-soft); opacity:.7; margin-bottom:8px;}
+.tone-card svg{ width:100%; height:74px; }
+.tone-card .example{ margin-top:8px; }
+.tone-card .example .hz{ font-family:var(--font-zh); font-size:31px; }
+.tone-card .example .py{ font-size:23px; font-weight:700; }
+.tone-card .example .vn{ font-size:17px; color:var(--ink-soft); }
+.tone-card .emoji{ font-size:31px; }
+.tone-card .spk{ margin-top:8px; font-size:16px; color:var(--jade-dark); }
+
+/* ---------- COMPARISON TABLE ---------- */
+table.cmp{ width:100%; border-collapse:collapse; font-size:18.5px; }
+table.cmp th, table.cmp td{ border:1px solid var(--line); padding:9px 10px; text-align:left; vertical-align:top; }
+table.cmp th{ background:var(--navy); color:#fff; font-weight:700; }
+table.cmp tr:nth-child(even) td{ background:var(--paper-2); }
+
+/* ---------- SYLLABLE STRUCTURE TABLE ---------- */
+table.struct{ width:100%; border-collapse:collapse; font-size:19px; }
+table.struct th, table.struct td{ border:1px solid var(--line); padding:10px; text-align:center; }
+table.struct th{ background:var(--gold); color:var(--gold-dark); }
+table.struct td.hz{ font-size:21px; }
+table.struct td.empty{ color:#bbb; font-style:italic; }
+
+/* ---------- SANDHI ---------- */
+.sandhi-hero{
+  display:flex; align-items:center; justify-content:center; gap:14px;
+  flex-wrap:wrap; padding:18px; background:var(--jade-soft); border-radius:14px; margin:14px 0 18px;
+}
+.sandhi-hero .mark{ font-size:39px; font-weight:800; }
+.sandhi-hero .arrow{ font-size:31px; color:var(--jade-dark); }
+.sandhi-mark3{ color:var(--jade-dark); }
+.sandhi-mark2{ color:var(--gold-dark); }
+
+.sandhi-table{ width:100%; border-collapse:collapse; font-size:19.5px; }
+.sandhi-table th, .sandhi-table td{ border:1px solid var(--line); padding:10px; text-align:center; }
+.sandhi-table th{ background:var(--navy); color:#fff; }
+.sandhi-table .arrow-cell{ color:var(--jade-dark); font-weight:700; font-size:23px; }
+.sandhi-table .result{ color:var(--red-dark); font-weight:700; }
+
+.sandhi-grid{ display:grid; grid-template-columns:repeat(auto-fill,minmax(190px,1fr)); gap:12px; }
+.sandhi-card{
+  background:#fff; border:1.5px solid var(--line); border-radius:14px; padding:12px; text-align:center; cursor:pointer;
+  transition:all .15s ease;
+}
+.sandhi-card:hover{ border-color:var(--jade); transform:translateY(-3px); box-shadow:0 8px 16px var(--shadow); }
+.sandhi-card .hz{ font-family:var(--font-zh); font-size:24px; color:var(--red-dark); }
+.sandhi-card .written{ font-size:18px; color:var(--ink-soft); margin-top:2px; }
+.sandhi-card .written .strike{ text-decoration: line-through; opacity:.5; }
+.sandhi-card .spoken{ font-size:20px; font-weight:700; color:var(--jade-dark); margin-top:4px; }
+.sandhi-card .vn{ font-size:16.5px; color:var(--ink-soft); margin-top:3px; }
+
+/* ---------- CONTROLS (speed / play all) ---------- */
+.toolbar{
+  display:flex; align-items:center; gap:10px; margin-bottom:16px; flex-wrap:wrap;
+}
+.btn{
+  border:1.5px solid var(--line); background:#fff; color:var(--ink);
+  padding:8px 14px; border-radius:999px; cursor:pointer; font-size:18px; font-weight:700;
+  display:inline-flex; align-items:center; gap:6px; transition:all .15s ease;
+}
+.btn:hover{ border-color:var(--red); color:var(--red-dark); }
+.btn.primary{ background:var(--red); border-color:var(--red); color:#fff; }
+.btn.primary:hover{ background:var(--red-dark); color:#fff; }
+.speed-group{ display:flex; gap:4px; background:var(--paper-2); padding:3px; border-radius:999px; border:1px solid var(--line); }
+.speed-group button{ border:none; background:transparent; padding:6px 11px; border-radius:999px; cursor:pointer; font-size:17.5px; font-weight:700; color:var(--ink-soft); }
+.speed-group button.active{ background:var(--navy); color:#fff; }
+
+/* ---------- OVERVIEW SPECIFIC ---------- */
+.roadmap{ display:grid; grid-template-columns:repeat(auto-fit,minmax(200px,1fr)); gap:14px; margin-top:8px; }
+.road-card{
+  background:#fff; border:1.5px solid var(--line); border-radius:14px; padding:14px; cursor:pointer;
+  transition:all .15s ease; position:relative;
+}
+.road-card:hover{ transform:translateY(-4px); box-shadow:0 10px 18px var(--shadow); border-color:var(--gold); }
+.road-card .rn{ font-family:var(--font-zh); font-size:27px; color:var(--red); }
+.road-card .rt{ font-size:19px; font-weight:700; color:var(--navy); margin-top:4px; }
+.road-card .rd{ font-size:17px; color:var(--ink-soft); margin-top:3px; }
+
+.formula{
+  display:flex; align-items:center; justify-content:center; gap:10px; flex-wrap:wrap;
+  padding:20px; background:linear-gradient(135deg,var(--red-soft),var(--gold-soft));
+  border-radius:16px; margin:10px 0 20px;
+}
+.formula .piece{ text-align:center; }
+.formula .piece .top{ font-size:31px; font-weight:800; }
+.formula .piece .bot{ font-size:16.5px; color:var(--ink-soft); }
+.formula .op{ font-size:27px; color:var(--ink-soft); font-weight:700; }
+.f-b{ color:var(--red-dark); } .f-a{ color:var(--gold-dark); } .f-tone{ color:var(--jade-dark); } .f-r{ color:var(--navy); }
+
+.formula-image{ text-align:center; margin:-6px 0 20px; }
+.formula-image img{
+  max-width:100%; max-height:420px;
+  border-radius:16px;
+  box-shadow:0 4px 16px var(--shadow);
+  border:1px solid var(--line);
+}
+
+/* ---------- CONFUSABLE PAIRS ---------- */
+.confuse-grid{ display:grid; grid-template-columns:repeat(auto-fit,minmax(270px,1fr)); gap:16px; margin-top:16px; }
+.confuse-pair{ background:var(--paper-2); border:1.5px solid var(--line); border-radius:14px; padding:16px; }
+.confuse-pair .vs-row{ display:flex; align-items:center; justify-content:center; gap:16px; margin-bottom:10px; }
+.confuse-pair .vs-letter{ font-size:35px; font-weight:800; font-family:var(--font-vn); line-height:1; cursor:pointer; }
+.confuse-pair .vs-letter.no-asp{ color:var(--jade-dark); }
+.confuse-pair .vs-letter.asp{ color:var(--red-dark); }
+.confuse-pair .vs-sep{ font-size:17px; color:var(--ink-soft); font-weight:700; }
+.confuse-pair .vs-tags{ text-align:center; margin-bottom:8px; }
+.confuse-pair .vs-tag{ display:inline-block; font-size:13px; font-weight:700; padding:3px 10px; border-radius:999px; margin:0 4px; }
+.confuse-pair .vs-tag.no-asp{ background:var(--jade-soft); color:var(--jade-dark); }
+.confuse-pair .vs-tag.asp{ background:var(--red-soft); color:var(--red-dark); }
+.confuse-pair .vs-desc{ font-size:15px; color:var(--ink); text-align:center; line-height:1.55; }
+
+/* ---------- COMMON MISTAKES ---------- */
+.mistake-list{ display:flex; flex-direction:column; gap:14px; margin-top:14px; }
+.mistake-item{ display:flex; gap:14px; background:var(--red-soft); border-left:5px solid var(--red); border-radius:12px; padding:14px 18px; }
+.mistake-item .mi-icon{ font-size:23px; flex:0 0 auto; }
+.mistake-item .mi-text{ font-size:15.5px; line-height:1.6; }
+.mistake-item .mi-text b{ color:var(--red-dark); }
+.mistake-item .mi-fix{ display:block; margin-top:4px; color:var(--jade-dark); font-weight:700; }
+
+/* ---------- VIDEO MODAL (per-letter) ---------- */
+.video-modal{
+  position:fixed; inset:0; z-index:200;
+  display:none; align-items:center; justify-content:center; padding:20px;
+}
+.video-modal.open{ display:flex; }
+.video-modal-backdrop{
+  position:absolute; inset:0; background:rgba(30,15,35,.55);
+}
+.video-modal-card{
+  position:relative; z-index:1;
+  background:#fff; border-radius:18px; padding:16px;
+  max-width:560px; width:100%;
+  box-shadow:0 24px 60px rgba(0,0,0,.35);
+  animation:modalPop .2s ease;
+}
+@keyframes modalPop{ from{opacity:0; transform:scale(.95);} to{opacity:1; transform:scale(1);} }
+.video-modal-close{
+  position:absolute; top:10px; right:10px; z-index:2;
+  width:32px; height:32px; border-radius:50%;
+  border:none; background:var(--paper-2); color:var(--ink-soft);
+  font-size:19px; cursor:pointer;
+}
+.video-modal-close:hover{ background:var(--red-soft); color:var(--red-dark); }
+.video-modal-title{
+  font-size:22px; font-weight:700; color:var(--navy);
+  margin:2px 40px 10px 4px;
+}
+.video-modal-title .zh{ color:var(--red); font-size:26px; margin-right:6px; }
+.video-modal-card video{
+  width:100%; aspect-ratio:16/9; border-radius:12px; background:#000; display:block;
+}
+.video-modal-fallback{ margin-top:12px; text-align:center; }
+
+/* ---------- AUDIO PLAYER ---------- */
+.audio-player{
+  display:flex; align-items:center; gap:9px;
+  background:var(--paper-2); border:1.5px solid var(--line);
+  padding:4px 12px 4px 12px; border-radius:999px;
+}
+.audio-label{ font-size:17px; font-weight:700; color:var(--red-dark); white-space:nowrap; }
+.audio-player audio{ height:32px; max-width:230px; }
+
+/* footer */
+.app-footer{
+  flex:0 0 auto; padding:4px 14px; font-size:11px; color:var(--ink-soft);
+  background:var(--paper-2); border-top:1px solid var(--line); text-align:center;
+  line-height:1.4;
+}
+
+/* scrollbars */
+/* (panel-level scrollbars no longer needed — whole page scrolls now) */
+
+@media (max-width:760px){
+  .two-col{ grid-template-columns:1fr; }
+  .header-title{ font-size:12px; }
+  .header-title .zh{ font-size:13px; }
+  .panel{ padding:18px 14px 50px; }
+  .sidebar{ flex-basis:230px; width:230px; }
+}
+</style>
+</head>
+<body>
+
+<div class="cloud-motif"></div>
+
+<div class="app">
+
+  <!-- ================= HEADER (compact) ================= -->
+  <header class="app-header">
+    <button class="sidebar-toggle" id="sidebar-toggle" aria-label="Mở/đóng menu">☰</button>
+    <div class="seal zh">音</div>
+    <h1 class="header-title"><span class="zh">汉语拼音</span> Ngữ Âm Nhập Môn Tiếng Trung</h1>
+    <button class="fullscreen-toggle" id="fullscreen-toggle" aria-label="Toàn màn hình" title="Toàn màn hình">
+      <svg class="icon-enter" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M8 3H5a2 2 0 0 0-2 2v3"/>
+        <path d="M16 3h3a2 2 0 0 1 2 2v3"/>
+        <path d="M21 16v3a2 2 0 0 1-2 2h-3"/>
+        <path d="M3 16v3a2 2 0 0 0 2 2h3"/>
+      </svg>
+      <svg class="icon-exit" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M8 3v3a2 2 0 0 1-2 2H3"/>
+        <path d="M21 8h-3a2 2 0 0 1-2-2V3"/>
+        <path d="M3 16h3a2 2 0 0 1 2 2v3"/>
+        <path d="M16 21v-3a2 2 0 0 1 2-2h3"/>
+      </svg>
+    </button>
+  </header>
+
+  <div class="body-row">
+    <!-- ================= SIDEBAR ================= -->
+    <nav class="sidebar" id="sidebar">
+      <button class="side-btn active" data-panel="p-overview">
+        <span class="side-num">1</span><span class="side-label"><span class="side-zh zh">总览</span><span class="side-vn">Tổng quan</span></span>
+      </button>
+      <button class="side-btn" data-panel="p-initials">
+        <span class="side-num">2</span><span class="side-label"><span class="side-zh zh">声母</span><span class="side-vn">Thanh mẫu</span><span class="side-desc">14 phụ âm đầu</span></span>
+      </button>
+      <button class="side-btn" data-panel="p-finals">
+        <span class="side-num">3</span><span class="side-label"><span class="side-zh zh">韵母</span><span class="side-vn">Vận mẫu</span><span class="side-desc">18 vần cơ bản</span></span>
+      </button>
+      <button class="side-btn" data-panel="p-tones">
+        <span class="side-num">4</span><span class="side-label"><span class="side-zh zh">声调</span><span class="side-vn">Thanh điệu</span><span class="side-desc">4 thanh + so sánh tiếng Việt</span></span>
+      </button>
+      <button class="side-btn" data-panel="p-single">
+        <span class="side-num">5</span><span class="side-label"><span class="side-zh zh">单音节</span><span class="side-vn">Luyện đọc từ đơn</span><span class="side-desc">Luyện đọc 1 âm tiết</span></span>
+      </button>
+      <button class="side-btn" data-panel="p-compound">
+        <span class="side-num">6</span><span class="side-label"><span class="side-zh zh">双音节</span><span class="side-vn">Luyện đọc từ ghép</span><span class="side-desc">Luyện đọc 2 âm tiết</span></span>
+      </button>
+      <button class="side-btn" data-panel="p-sandhi">
+        <span class="side-num">7</span><span class="side-label"><span class="side-zh zh">变调</span><span class="side-vn">Biến điệu thanh 3</span><span class="side-desc">Quy tắc 3+3 → 2+3</span></span>
+      </button>
+    </nav>
+    <div class="sidebar-backdrop" id="sidebar-backdrop"></div>
+
+    <!-- ================= MAIN ================= -->
+    <main class="main" id="main">
+
+    <!-- ============ PANEL 1: TỔNG QUAN ============ -->
+    <section class="panel active" id="p-overview">
+      <div class="panel-head">
+        <span class="num zh">总览</span>
+        <h2><span class="zh">拼音</span>Tổng quan về ngữ âm tiếng Trung</h2>
+      </div>
+      <p class="panel-lead">Hệ thống Pinyin (<span class="zh">拼音</span>) là cách ghi âm chính thức của tiếng Trung Quốc, giúp người học đọc đúng chữ Hán trước khi biết viết. Mỗi âm tiết tiếng Trung được tạo thành từ ba phần.</p>
+
+      <div class="formula">
+        <div class="piece"><div class="top f-b zh">声母</div><div class="bot">Thanh mẫu<br>(phụ âm đầu)</div></div>
+        <div class="op">+</div>
+        <div class="piece"><div class="top f-a zh">韵母</div><div class="bot">Vận mẫu<br>(phần vần)</div></div>
+        <div class="op">+</div>
+        <div class="piece"><div class="top f-tone zh">声调</div><div class="bot">Thanh điệu<br>(dấu thanh)</div></div>
+        <div class="op">=</div>
+        <div class="piece"><div class="top f-r zh">音节</div><div class="bot">Âm tiết<br>(1 chữ Hán)</div></div>
+      </div>
+
+      <!-- ẢNH MINH HOẠ SAU KHUNG CÔNG THỨC — đặt file tên đúng "am-tiet-minh-hoa.jpg" (hoặc .png)
+           vào CÙNG THƯ MỤC với file HTML này là ảnh tự hiện ra, không cần sửa code.
+           Nếu chưa có file, khung này tự ẩn — không hiện icon ảnh vỡ. -->
+      <div class="formula-image" id="formula-image-wrap">
+        <img src="am-tiet-minh-hoa.jpg" alt="Hình minh họa âm tiết"
+             onerror="this.closest('.formula-image').style.display='none';">
+      </div>
+
+      <div class="frame accent-red">
+        <h3><span class="zh">音节</span>Âm tiết của tiếng Trung Quốc</h3>
+        <p class="zh-line">汉语的音节一般由声母、韵母、声调三部分组成。一个汉字对应一个音节。汉语的一个音节可以没有声母，但是一定要有韵母和声调。</p>
+        <p>Âm tiết tiếng Trung Quốc thường được tạo thành bởi ba phần: <b>thanh mẫu</b> (phụ âm đầu), <b>vận mẫu</b> (vần) và <b>thanh điệu</b>. Một chữ Trung Quốc tương ứng với một âm tiết. Một âm tiết <b>có thể không có thanh mẫu</b>, nhưng <b>bắt buộc phải có vận mẫu và thanh điệu</b>.</p>
+
+        <div style="overflow-x:auto; margin-top:12px;">
+        <table class="struct">
+          <tr><th>Âm tiết</th><th><span class="zh">声母</span> Thanh mẫu</th><th><span class="zh">韵母</span> Vận mẫu</th><th><span class="zh">声调</span> Thanh điệu</th></tr>
+          <tr><td class="hz">māo（<span class="zh">猫</span>，mèo）</td><td>m</td><td>ao</td><td>ˉ</td></tr>
+          <tr><td class="hz">yú（<span class="zh">鱼</span>，cá）</td><td class="empty">— không có —</td><td>ü</td><td>ˊ</td></tr>
+          <tr><td class="hz">jiě（<span class="zh">姐</span>，chị）</td><td>j</td><td>ie</td><td>ˇ</td></tr>
+          <tr><td class="hz">èr（<span class="zh">二</span>，hai）</td><td class="empty">— không có —</td><td>er</td><td>ˋ</td></tr>
+        </table>
+        </div>
+
+        <p style="margin-top:12px;"><b>⚠️ Chú ý quan trọng:</b> Khi âm tiết chỉ có vận mẫu <b>i</b> mà không có thanh mẫu, phải thêm <b>y</b> vào phía trước (i → yi); vận mẫu <b>ü</b> đứng một mình bỏ hai dấu chấm và thêm y (ü → yu). Khi âm tiết chỉ có vận mẫu <b>u</b>, phải thêm <b>w</b> vào phía trước (u → wu).</p>
+      </div>
+
+      <div class="group-title"><span class="dot" style="background:var(--gold)"></span><h4>Nội dung bài học <span class="desc">— bấm vào từng thẻ để chuyển tab</span></h4></div>
+      <div class="roadmap" id="roadmap"></div>
+    </section>
+
+    <!-- ============ PANEL 2: THANH MẪU ============ -->
+    <section class="panel" id="p-initials">
+      <div class="panel-head">
+        <span class="num zh">声母</span>
+        <h2><span class="zh">声母</span>Thanh mẫu (phụ âm đầu)</h2>
+        <span class="badge">14 / 21 thanh mẫu — Buổi 1</span>
+      </div>
+      <p class="panel-lead">Thanh mẫu là phụ âm đứng ở đầu âm tiết. Bấm vào từng ô 🔊 để nghe phát âm mẫu (ghép với nguyên âm minh hoạ).</p>
+      <div class="quick-nav" id="initials-quicknav"></div>
+      <div id="initials-wrap"></div>
+
+      <div class="frame accent-red" id="init-confuse" style="margin-top:22px;">
+        <h3>⚠️ Phân biệt các thanh mẫu dễ nhầm lẫn</h3>
+        <p><b>Mẹo kiểm tra bật hơi:</b> để một tờ giấy mỏng (hoặc lòng bàn tay) trước miệng khi phát âm. Tờ giấy bay mạnh → âm <span class="vs-tag asp" style="font-size:14px;">bật hơi</span>. Tờ giấy gần như không động → âm <span class="vs-tag no-asp" style="font-size:14px;">không bật hơi</span>. Đây là điểm khác biệt DUY NHẤT giữa mỗi cặp dưới đây (vị trí lưỡi/môi hoàn toàn giống nhau).</p>
+        <div class="confuse-grid">
+          <div class="confuse-pair">
+            <div class="vs-row"><span class="vs-letter no-asp" data-hz="波">b</span><span class="vs-sep">↔</span><span class="vs-letter asp" data-hz="坡">p</span></div>
+            <div class="vs-tags"><span class="vs-tag no-asp">không bật hơi</span><span class="vs-tag asp">bật hơi</span></div>
+            <div class="vs-desc">Hai môi khép rồi mở giống nhau — chỉ khác luồng hơi bật ra.</div>
+          </div>
+          <div class="confuse-pair">
+            <div class="vs-row"><span class="vs-letter no-asp" data-hz="搭">d</span><span class="vs-sep">↔</span><span class="vs-letter asp" data-hz="他">t</span></div>
+            <div class="vs-tags"><span class="vs-tag no-asp">không bật hơi</span><span class="vs-tag asp">bật hơi</span></div>
+            <div class="vs-desc">Đầu lưỡi chạm lợi giống nhau — chỉ khác luồng hơi bật ra.</div>
+          </div>
+          <div class="confuse-pair">
+            <div class="vs-row"><span class="vs-letter no-asp" data-hz="哥">g</span><span class="vs-sep">↔</span><span class="vs-letter asp" data-hz="科">k</span></div>
+            <div class="vs-tags"><span class="vs-tag no-asp">không bật hơi</span><span class="vs-tag asp">bật hơi</span></div>
+            <div class="vs-desc">Gốc lưỡi chạm ngạc mềm giống nhau — chỉ khác luồng hơi bật ra.</div>
+          </div>
+          <div class="confuse-pair">
+            <div class="vs-row"><span class="vs-letter no-asp" data-hz="鸡">j</span><span class="vs-sep">↔</span><span class="vs-letter asp" data-hz="七">q</span></div>
+            <div class="vs-tags"><span class="vs-tag no-asp">không bật hơi</span><span class="vs-tag asp">bật hơi</span></div>
+            <div class="vs-desc">Mặt lưỡi áp ngạc cứng giống nhau — chỉ khác luồng hơi bật ra.</div>
+          </div>
+          <div class="confuse-pair">
+            <div class="vs-row"><span class="vs-letter no-asp" data-hz="妞">n</span><span class="vs-sep">↔</span><span class="vs-letter asp" data-hz="拉">l</span></div>
+            <div class="vs-tags"><span class="vs-tag no-asp">âm mũi</span><span class="vs-tag asp">âm bên</span></div>
+            <div class="vs-desc">KHÔNG liên quan bật hơi. Bịt mũi khi đọc "n" sẽ không phát ra tiếng (vì hơi thoát qua mũi); "l" thì vẫn đọc bình thường (hơi thoát 2 bên lưỡi).</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="frame accent-gold" id="init-mistake">
+        <h3>🇻🇳 Lỗi người Việt hay mắc phải</h3>
+        <div class="mistake-list">
+          <div class="mistake-item">
+            <span class="mi-icon">❌</span>
+            <div class="mi-text">Đọc <b>b / d / g</b> pinyin y hệt <b>b / đ / g</b> tiếng Việt (rung dây thanh).
+              <span class="mi-fix">✅ Sửa: b/d/g pinyin là âm KHÔNG bật hơi nhưng KHÔNG rung dây thanh — gần "p/t/c" tiếng Việt đọc nhẹ hơn là gần "b/đ/g".</span>
+            </div>
+          </div>
+          <div class="mistake-item">
+            <span class="mi-icon">❌</span>
+            <div class="mi-text">Lẫn lộn <b>n</b> và <b>l</b> (thường gặp ở người quen nói ngọng n/l trong tiếng Việt).
+              <span class="mi-fix">✅ Sửa: tập riêng từng âm, dùng mẹo bịt mũi ở trên để tự kiểm tra.</span>
+            </div>
+          </div>
+          <div class="mistake-item">
+            <span class="mi-icon">❌</span>
+            <div class="mi-text"><b>j / q / x</b> bị đọc cong lưỡi giống âm "tr/ch" tiếng Việt.
+              <span class="mi-fix">✅ Sửa: lưỡi phải BẸT, mặt lưỡi áp sát ngạc cứng — tuyệt đối không cong đầu lưỡi lên.</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ PANEL 3: VẬN MẪU ============ -->
+    <section class="panel" id="p-finals">
+      <div class="panel-head">
+        <span class="num zh">韵母</span>
+        <h2><span class="zh">韵母</span>Vận mẫu (phần vần)</h2>
+        <span class="badge">18 / 36 vận mẫu — Buổi 1</span>
+      </div>
+      <p class="panel-lead">Vận mẫu là phần vần đứng sau thanh mẫu. Bấm vào từng ô 🔊 để nghe phát âm mẫu.</p>
+      <div class="quick-nav" id="finals-quicknav"></div>
+      <div id="finals-wrap"></div>
+
+      <div class="frame accent-gold" id="final-mistake" style="margin-top:22px;">
+        <h3>🇻🇳 Lỗi người Việt hay mắc phải</h3>
+        <div class="mistake-list">
+          <div class="mistake-item">
+            <span class="mi-icon">❌</span>
+            <div class="mi-text">Đọc vận mẫu <b>e</b> (đứng một mình) theo phản xạ tiếng Việt thành "e/ê".
+              <span class="mi-fix">✅ Sửa: "e" một mình đọc như "ơ", miệng hé chứ không mở như "e/ê" tiếng Việt.</span>
+            </div>
+          </div>
+          <div class="mistake-item">
+            <span class="mi-icon">❌</span>
+            <div class="mi-text">Âm <b>ü</b> không có trong tiếng Việt nên hay bị đọc thành "u" hoặc "i".
+              <span class="mi-fix">✅ Sửa: môi tròn như đọc "u" nhưng giữ lưỡi ở vị trí đọc "i" — cần tập riêng trước gương.</span>
+            </div>
+          </div>
+          <div class="mistake-item">
+            <span class="mi-icon">❌</span>
+            <div class="mi-text">Trong các vận mẫu ghép như <b>ei, ie, uei</b> — chữ "e" bị đọc thành "ơ" (giống khi "e" đứng một mình).
+              <span class="mi-fix">✅ Sửa: khi "e" đi cùng "i" trong một vận mẫu ghép, luôn đọc thành "ê", KHÔNG đọc thành "ơ".</span>
+            </div>
+          </div>
+          <div class="mistake-item">
+            <span class="mi-icon">❌</span>
+            <div class="mi-text">Nhầm chính tả <b>ao</b> pinyin với vần "au" tiếng Việt khi viết.
+              <span class="mi-fix">✅ Sửa: pinyin chỉ có "ao", không có "au" — cần ghi nhớ đúng mặt chữ.</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ PANEL 4: THANH ĐIỆU ============ -->
+    <section class="panel" id="p-tones">
+      <div class="panel-head">
+        <span class="num zh">声调</span>
+        <h2><span class="zh">声调</span>Thanh điệu (bốn thanh)</h2>
+      </div>
+      <p class="panel-lead">Tiếng Trung có 4 thanh điệu cơ bản, ký hiệu theo phương pháp <b class="zh">五度标调法</b> (thang 5 độ cao): thanh 1 (55), thanh 2 (35), thanh 3 (214), thanh 4 (51). Thanh điệu có vai trò <b>phân biệt nghĩa của từ</b>.</p>
+      <div class="quick-nav" id="tones-quicknav"></div>
+
+      <div class="frame accent-red" id="tone-basic">
+        <h3>🎵 Bốn thanh điệu cơ bản</h3>
+        <div class="audio-player">
+          <span class="audio-label">🎧 01-4</span>
+          <audio id="audio-01-4" controls preload="none"></audio>
+        </div>
+        <div class="tone-cards" id="tone-cards"></div>
+      </div>
+
+      <div class="frame accent-navy" id="tone-compare" style="margin-top:22px;">
+        <h3>🇻🇳 So sánh với thanh điệu tiếng Việt</h3>
+        <div style="overflow-x:auto;">
+        <table class="cmp">
+          <tr><th>Thanh tiếng Trung</th><th>Gần giống thanh Việt</th><th>Khác biệt quan trọng</th></tr>
+          <tr><td>Thanh 1 (ˉ)</td><td>Thanh ngang <i>(a)</i></td><td>Cao hơn, bằng hơn, không rơi ở cuối</td></tr>
+          <tr><td>Thanh 2 (ˊ)</td><td>Thanh sắc <i>(á)</i></td><td>Bắt đầu từ giữa, không đi lên từ vị trí thấp như tiếng Việt</td></tr>
+          <tr><td>Thanh 3 (ˇ)</td><td>Gần thanh hỏi <i>(ả)</i></td><td>Phải xuống đủ sâu rồi mới lên; người Việt hay bỏ phần lên cuối</td></tr>
+          <tr><td>Thanh 4 (ˋ)</td><td>Thanh nặng <i>(ạ)</i></td><td>Ngắn, dứt khoát, không kéo dài kiểu thanh nặng tiếng Việt</td></tr>
+        </table>
+        </div>
+      </div>
+
+      <div class="frame accent-gold" id="tone-drill">
+        <div class="toolbar">
+          <h3 style="margin:0;">🎲 Luyện đọc phân biệt thanh điệu (bốc thăm)</h3>
+          <div class="audio-player" style="margin-left:auto;">
+            <span class="audio-label">🎧 01-5</span>
+            <audio id="audio-01-5" controls preload="none"></audio>
+          </div>
+          <div class="speed-group" id="speed-group-tone"></div>
+        </div>
+        <p>Đọc to các âm tiết sau, chú ý sự khác biệt giữa các thanh (thanh 1 – thanh 2 – thanh 3 – thanh 4).</p>
+        <div class="tone-set-grid" id="tone-drill-simple"></div>
+      </div>
+    </section>
+
+    <!-- ============ PANEL 5: LUYỆN ĐỌC TỪ ĐƠN ============ -->
+    <section class="panel" id="p-single">
+      <div class="panel-head">
+        <span class="num zh">单音节</span>
+        <h2><span class="zh">单音节词语</span>Luyện đọc từ đơn (một âm tiết)</h2>
+      </div>
+
+      <div class="frame accent-red">
+        <div class="toolbar">
+          <h3 style="margin:0;">🖼️ Xem hình, đọc to những từ này (thẻ flashcard)</h3>
+          <button class="btn primary" id="play-single-all">▶ Đọc toàn bộ</button>
+          <button class="btn" id="pause-single-all">⏸ Tạm dừng</button>
+          <div class="audio-player" style="margin-left:auto;">
+            <span class="audio-label">🎧 01-6</span>
+            <audio id="audio-01-6" controls preload="none"></audio>
+          </div>
+        </div>
+        <div class="word-grid word-grid-pic" id="single-word-grid"></div>
+      </div>
+
+      <div class="frame accent-jade">
+        <div class="toolbar">
+          <h3 style="margin:0;">🎲 Đọc to các từ có một âm tiết (bốc thăm)</h3>
+          <div class="audio-player" style="margin-left:auto;">
+            <span class="audio-label">🎧 01-1</span>
+            <audio id="audio-01-1" controls preload="none"></audio>
+          </div>
+          <div class="speed-group" id="speed-group-single"></div>
+        </div>
+        <p>Chú ý phân biệt 4 thanh điệu trong cùng một vần.</p>
+        <div class="tone-set-grid" id="single-drill-grid"></div>
+      </div>
+    </section>
+
+    <!-- ============ PANEL 6: LUYỆN ĐỌC TỪ GHÉP ============ -->
+    <section class="panel" id="p-compound">
+      <div class="panel-head">
+        <span class="num zh">双音节</span>
+        <h2><span class="zh">双音节词语</span>Luyện đọc từ ghép (hai âm tiết)</h2>
+      </div>
+
+      <div class="frame accent-red">
+        <div class="toolbar">
+          <h3 style="margin:0;">🖼️ Xem hình, đọc to những từ này (thẻ flashcard)</h3>
+          <button class="btn primary" id="play-compound-all">▶ Đọc toàn bộ</button>
+          <button class="btn" id="pause-compound-all">⏸ Tạm dừng</button>
+          <div class="audio-player" style="margin-left:auto;">
+            <span class="audio-label">🎧 01-7</span>
+            <audio id="audio-01-7" controls preload="none"></audio>
+          </div>
+        </div>
+        <div class="word-grid word-grid-pic" id="compound-word-grid"></div>
+      </div>
+
+      <div class="frame accent-gold">
+        <div class="toolbar">
+          <h3 style="margin:0;">🎲 Luyện đọc mở rộng — từ hai âm tiết (bốc thăm)</h3>
+          <div class="audio-player" style="margin-left:auto;">
+            <span class="audio-label">🎧 01-2</span>
+            <audio id="audio-01-2" controls preload="none"></audio>
+          </div>
+          <div class="speed-group" id="speed-group-compound"></div>
+        </div>
+        <div class="word-grid" id="compound-drill-grid"></div>
+      </div>
+    </section>
+
+    <!-- ============ PANEL 7: BIẾN ĐIỆU THANH 3 ============ -->
+    <section class="panel" id="p-sandhi">
+      <div class="panel-head">
+        <span class="num zh">变调</span>
+        <h2><span class="zh">两个三声的连读变调</span>Biến điệu thanh 3</h2>
+      </div>
+      <p class="panel-lead">Sự biến đổi về thanh điệu khi hai âm tiết mang thanh 3 đi liền nhau.</p>
+
+      <div class="frame accent-jade">
+        <h3><span class="zh">连读变调</span>Quy tắc biến điệu</h3>
+        <p class="zh-line">当两个第三声音节连读时，第一个音节变为第二声，3+3 变为 2+3。比如：<span class="latin">"nǐ</span>(你)<span class="latin">" + "hǎo</span>(好)<span class="latin">"</span> 变为 <span class="latin">"níhǎo"</span>。但是注音时，要标原调。</p>
+        <p>Khi hai âm tiết mang <b>thanh 3</b> được đọc liền nhau, thanh điệu của âm tiết <b>thứ nhất</b> được chuyển thành <b>thanh 2</b> (3+3 → 2+3). Ví dụ: "nǐ (<span class="zh">你</span>)" + "hǎo (<span class="zh">好</span>)" được đọc thành <b>"níhǎo"</b>. Tuy nhiên, khi <b>ghi dấu thanh điệu trên chữ viết</b>, ta vẫn phải ghi thanh 3 ban đầu — chỉ có <b>cách đọc thực tế</b> mới thay đổi.</p>
+
+        <div class="sandhi-hero">
+          <span class="mark sandhi-mark3">ˇ</span>
+          <span class="op" style="font-size:27px;">+</span>
+          <span class="mark sandhi-mark3">ˇ</span>
+          <span class="arrow">→</span>
+          <span class="mark sandhi-mark2">ˊ</span>
+          <span class="op" style="font-size:27px;">+</span>
+          <span class="mark sandhi-mark3">ˇ</span>
+        </div>
+
+        <div style="overflow-x:auto;">
+        <table class="sandhi-table">
+          <tr><th>Chữ viết</th><th></th><th>Chữ viết</th><th>Cách đọc thực tế</th></tr>
+          <tr>
+            <td>nǐ <span class="zh">（你）</span></td><td class="arrow-cell">+</td>
+            <td>hǎo <span class="zh">（好）</span></td><td class="result">ní hǎo</td>
+          </tr>
+          <tr>
+            <td>kě <span class="zh">（可）</span></td><td class="arrow-cell">+</td>
+            <td>yǐ <span class="zh">（以）</span></td><td class="result">ké yǐ</td>
+          </tr>
+          <tr>
+            <td>fǔ <span class="zh">（辅）</span></td><td class="arrow-cell">+</td>
+            <td>dǎo <span class="zh">（导）</span></td><td class="result">fú dǎo</td>
+          </tr>
+        </table>
+        </div>
+      </div>
+
+      <div class="frame accent-gold">
+        <h3>➕ Mở rộng — nhiều thanh 3 đứng liền nhau</h3>
+        <p>Khi có <b>từ 3 âm tiết mang thanh 3 trở lên</b> đứng liền nhau, nguyên tắc biến điệu áp dụng <b>từ phải sang trái</b>: mọi âm tiết thanh 3 (trừ âm tiết cuối cùng) đều đọc thành thanh 2.</p>
+        <div class="two-col">
+          <div class="frame accent-jade" style="margin:0;">
+            <p class="zh-line">你也好 <span class="latin" style="color:var(--ink-soft)">nǐ yě hǎo</span></p>
+            <p>→ đọc thành: <b class="result" style="color:var(--red-dark)">nǐ yé hǎo</b> <span style="color:var(--ink-soft)">(chỉ "yě" biến điệu vì đứng trước "hǎo")</span></p>
+          </div>
+          <div class="frame accent-jade" style="margin:0;">
+            <p class="zh-line">我也好 <span class="latin" style="color:var(--ink-soft)">wǒ yě hǎo</span></p>
+            <p>→ đọc thành: <b class="result" style="color:var(--red-dark)">wó yé hǎo</b> <span style="color:var(--ink-soft)">(cả "wǒ" và "yě" đều biến điệu)</span></p>
+          </div>
+        </div>
+      </div>
+
+      <div class="frame accent-red">
+        <div class="toolbar">
+          <h3 style="margin:0;">🔁 Đọc to các từ sau, chú ý cách đọc âm tiết mang thanh 3</h3>
+          <div class="audio-player" style="margin-left:auto;">
+            <span class="audio-label">🎧 01-8</span>
+            <audio id="audio-01-8" controls preload="none"></audio>
+          </div>
+          <div class="speed-group" id="speed-group-sandhi"></div>
+        </div>
+        <div class="sandhi-grid" id="sandhi-grid"></div>
+      </div>
+    </section>
+
+  </main>
+  </div>
+
+  <footer class="app-footer">
+    汉语语音 · Ngữ âm tiếng Trung · lạc lối vào thế giới tiếng Trung yyaoo · 0387657439
+  </footer>
+</div>
+
+<!-- ============ VIDEO MODAL (per-letter pronunciation) ============ -->
+<div class="video-modal" id="video-modal">
+  <div class="video-modal-backdrop" id="video-modal-backdrop"></div>
+  <div class="video-modal-card">
+    <button class="video-modal-close" id="video-modal-close" aria-label="Đóng">✕</button>
+    <div class="video-modal-title" id="video-modal-title"></div>
+    <video id="video-modal-player" controls playsinline preload="none"></video>
+    <div class="video-modal-fallback">
+      <button class="btn" id="video-modal-tts">🔊 Nghe giọng máy (nếu chưa có video)</button>
+    </div>
+  </div>
+</div>
+
+<!-- ============ SCROLL-TO-TOP BUTTON ============ -->
+<button class="scroll-top-btn" id="scroll-top-btn" aria-label="Cuộn lên đầu trang" title="Lên đầu trang">
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M12 19V5"/>
+    <path d="M5 12l7-7 7 7"/>
+  </svg>
+</button>
+
+<script>
+(function(){
+"use strict";
+
+/* ============================================================
+   DATA
+============================================================ */
+var INITIAL_GROUPS = [
+  { zh:"唇音", vn:"Âm môi", color:"var(--red)", desc:"hai môi khép rồi bật hơi / môi dưới chạm răng trên",
+    items:[
+      {sym:"b", reading:"bō", exPy:"bō", exHz:"波", exVn:"sóng", tip:"KHÔNG bật hơi — gần giống \"p\" tiếng Việt, không phải \"b\" tiếng Việt (b tiếng Việt có rung dây thanh, còn b pinyin thì không)"},
+      {sym:"p", reading:"pō", exPy:"pō", exHz:"坡", exVn:"dốc", tip:"Hai môi khép chặt rồi bật hơi RẤT mạnh — mạnh hơn nhiều so với âm \"p\" trong từ \"pin\" tiếng Việt, cảm nhận rõ luồng hơi thổi ra ở lòng bàn tay"},
+      {sym:"m", reading:"mō", exPy:"mō", exHz:"摸", exVn:"sờ, chạm", tip:"Giống hệt \"m\" tiếng Việt"},
+      {sym:"f", reading:"fō", exPy:"fā", exHz:"发", exVn:"phát ra", tip:"Môi dưới chạm nhẹ răng trên rồi đẩy hơi ra, giống \"ph/f\" tiếng Việt. Lưu ý: âm mẫu chuẩn là \"fō\" nhưng KHÔNG có chữ Hán nào đọc đúng \"fō\" — chữ ví dụ bên dưới đọc là \"fā\""}
+    ]},
+  { zh:"舌尖音", vn:"Âm đầu lưỡi", color:"var(--gold-dark)", desc:"đầu lưỡi chạm lợi (chân răng trên)",
+    items:[
+      {sym:"d", reading:"dē", exPy:"dā", exHz:"搭", exVn:"đáp xe", tip:"KHÔNG bật hơi — gần giống \"t\" tiếng Việt, không phải \"đ\" tiếng Việt (đ tiếng Việt có rung dây thanh). Âm mẫu chuẩn \"dē\" không có chữ Hán tương ứng — chữ ví dụ bên dưới đọc là \"dā\""},
+      {sym:"t", reading:"tē", exPy:"tā", exHz:"他", exVn:"anh ấy/nó", tip:"Bật hơi mạnh — giống \"th\" tiếng Việt. Âm mẫu chuẩn \"tē\" không có chữ Hán tương ứng — chữ ví dụ bên dưới đọc là \"tā\""},
+      {sym:"n", reading:"nē", exPy:"niū", exHz:"妞", exVn:"cô bé", tip:"Giống hệt \"n\" tiếng Việt — đầu lưỡi chạm lợi, hơi thoát qua mũi. Âm mẫu chuẩn \"nē\" không có chữ Hán tương ứng — chữ ví dụ bên dưới đọc là \"niū\""},
+      {sym:"l", reading:"lē", exPy:"lā", exHz:"拉", exVn:"kéo", tip:"Giống hệt \"l\" tiếng Việt — đầu lưỡi chạm lợi, hơi thoát ra hai bên lưỡi. Âm mẫu chuẩn \"lē\" không có chữ Hán tương ứng — chữ ví dụ bên dưới đọc là \"lā\""}
+    ]},
+  { zh:"舌根音", vn:"Âm gốc lưỡi", color:"var(--jade-dark)", desc:"gốc lưỡi chạm ngạc mềm",
+    items:[
+      {sym:"g", reading:"gē", exPy:"gē", exHz:"哥", exVn:"anh trai", tip:"KHÔNG bật hơi — gần giống \"c/k\" tiếng Việt, không phải \"g\" tiếng Việt (g tiếng Việt có rung dây thanh)"},
+      {sym:"k", reading:"kē", exPy:"kē", exHz:"科", exVn:"khoa/môn học", tip:"Gốc lưỡi chạm ngạc mềm rồi bật hơi RẤT mạnh — mạnh hơn nhiều so với âm \"c/k\" tiếng Việt, cảm nhận rõ luồng hơi thổi ra ở lòng bàn tay"},
+      {sym:"h", reading:"hē", exPy:"hē", exHz:"喝", exVn:"uống", tip:"Ma sát nhẹ ở họng, giống \"h\" tiếng Việt"}
+    ]},
+  { zh:"舌面音", vn:"Âm mặt lưỡi", color:"var(--navy)", desc:"mặt lưỡi áp sát ngạc cứng, lưỡi bẹt, miệng banh sang hai bên như cười",
+    items:[
+      {sym:"j", reading:"jī", exPy:"jī", exHz:"鸡", exVn:"gà", tip:"KHÔNG bật hơi — gần giống \"ch/gi\" tiếng Việt nhẹ, mặt lưỡi bẹt (không cong lưỡi)"},
+      {sym:"q", reading:"qī", exPy:"qī", exHz:"七", exVn:"bảy/7", tip:"Bật hơi mạnh — giống \"ch\" tiếng Việt nhưng có luồng hơi rõ"},
+      {sym:"x", reading:"xī", exPy:"xī", exHz:"西", exVn:"phía tây", tip:"Giống \"x\" tiếng Việt nhưng lưỡi bẹt hơn, gió thoát qua khe hẹp giữa lưỡi và ngạc"}
+    ]}
+];
+
+var FINAL_GROUPS = [
+  { zh:"单元音韵母", vn:"Nguyên âm đơn", color:"var(--red)", desc:"7 nguyên âm đơn",
+    items:[
+      {sym:"a", slug:"a", tip:"Miệng mở to, giống hệt \"a\" tiếng Việt"},
+      {sym:"o", slug:"o", tip:"Môi tròn, bật ra từ họng, giống \"ô\" tiếng Việt"},
+      {sym:"e", slug:"e", tip:"Miệng hé, lưỡi ở giữa-sau, hơi giống âm \"ơ\" tiếng Việt — KHÔNG phải \"e/ê\" tiếng Việt"},
+      {sym:"i", slug:"i", tip:"Giống hệt \"i\" tiếng Việt, môi bẹt sang hai bên"},
+      {sym:"u", slug:"u", tip:"Môi tròn đẩy ra trước, giống hệt \"u\" tiếng Việt"},
+      {sym:"ü", slug:"v", tip:"Môi tròn như \"u\" nhưng lưỡi để ở vị trí \"i\" — âm này KHÔNG có trong tiếng Việt, cần tập riêng"},
+      {sym:"er", slug:"er", tip:"Đọc \"ơ\" rồi cong đầu lưỡi lên gần vòm miệng, chỉ xuất hiện một mình, không ghép với thanh mẫu"}
+    ]},
+  { zh:"复韵母 · 不带韵头", vn:"Vận mẫu phức — không âm đệm", color:"var(--gold-dark)", desc:"3 vận mẫu ghép cơ bản",
+    items:[
+      {sym:"ai", slug:"ai", tip:"a + i đọc lướt nhanh, giống \"ai\" tiếng Việt"},
+      {sym:"ei", slug:"ei", tip:"ê + i đọc lướt nhanh (e ở đây đọc như \"ê\"), giống \"ây\" tiếng Việt"},
+      {sym:"ao", slug:"ao", tip:"a + o đọc lướt nhanh, giống \"ao\" tiếng Việt"}
+    ]},
+  { zh:"复韵母 · 齐齿呼", vn:"Vận mẫu phức — âm đệm i", color:"var(--jade-dark)", desc:"3 vận mẫu có âm đệm i",
+    items:[
+      {sym:"ia", slug:"ia", tip:"i + a đọc liền, giống \"ia\" tiếng Việt"},
+      {sym:"ie", slug:"ie", tip:"i + ê đọc liền (e ở đây đọc như \"ê\"), giống \"iê\" tiếng Việt"},
+      {sym:"iao", slug:"iao", tip:"i + a + o đọc liền, giống \"eo\" kéo dài có \"i\" ở đầu"}
+    ]},
+  { zh:"复韵母 · 合口呼", vn:"Vận mẫu phức — âm đệm u", color:"var(--navy)", desc:"4 vận mẫu có âm đệm u",
+    items:[
+      {sym:"ua", slug:"ua", tip:"u + a đọc liền, giống \"oa\" tiếng Việt"},
+      {sym:"uo", slug:"uo", tip:"u + o đọc liền, giống \"uô\" tiếng Việt"},
+      {sym:"uai", slug:"uai", tip:"u + a + i đọc liền, giống \"oai\" tiếng Việt"},
+      {sym:"uei (ui)", slug:"uei", tip:"u + ê + i đọc liền, giống \"uây\" tiếng Việt; viết tắt thành \"ui\" khi có thanh mẫu đứng trước (ví dụ: duì, không viết dueì)"}
+    ]},
+  { zh:"复韵母 · 撮口呼", vn:"Vận mẫu phức — âm đệm ü", color:"var(--red-dark)", desc:"1 vận mẫu có âm đệm ü",
+    items:[
+      {sym:"üe", slug:"ve", tip:"ü + ê đọc liền (e ở đây đọc như \"ê\") — không có âm tương đương trong tiếng Việt"}
+    ]}
+];
+
+var EMBEDDED_VIDEOS = {
+  "van-mau": {},
+  "thanh-mau": {}
+};
+
+/* ============================================================
+   📹 DÁN LINK VIDEO GITHUB VÀO ĐÂY — CHỖ DUY NHẤT CẦN SỬA
+   ------------------------------------------------------------
+   Cách dùng (xem hướng dẫn chi tiết Claude đã gửi kèm):
+   1. Lấy link "raw" của video trên GitHub
+      (dạng: https://raw.githubusercontent.com/ten-ban/ten-repo/main/video/b.mp4)
+   2. Dán link đó vào giữa hai dấu ngoặc kép "" ở đúng dòng chữ cái tương ứng
+   3. Lưu file lại — xong, không cần sửa gì khác trong file này
+
+   Để trống "" = chữ đó CHƯA có video, web sẽ tự hiện nút
+   "🔊 Chưa có video / Bấm để nghe" thay thế, KHÔNG bị lỗi.
+============================================================ */
+var VIDEO_LINKS = {
+
+  // ---- 14 video THANH MẪU (声母) — mặc định trỏ tới file "<chữ cái>.mp4" đặt CÙNG THƯ MỤC với file HTML này ----
+  // Ví dụ: b -> "b.mp4", p -> "p.mp4". Chỉ cần đặt đúng tên file mp4 vào cùng thư mục là chạy được luôn.
+  // Muốn dùng link GitHub thay vì file cùng thư mục: xoá tên file, dán link raw vào giữa "" như hướng dẫn cũ.
+  "thanh-mau": {
+    "b": "b.mp4",
+    "p": "p.mp4",
+    "m": "m.mp4",
+    "f": "f.mp4",
+    "d": "d.mp4",
+    "t": "t.mp4",
+    "n": "n.mp4",
+    "l": "l.mp4",
+    "g": "g.mp4",
+    "k": "k.mp4",
+    "h": "h.mp4",
+    "j": "j.mp4",
+    "q": "q.mp4",
+    "x": "x.mp4"
+  },
+
+  // ---- 18 video VẬN MẪU (韵母) — dán link vào giữa "" ----
+  // Lưu ý: chữ "ü" đặt tên là "v", chữ "üe" đặt tên là "ve" (tránh dấu ü trong tên file)
+  "van-mau": {
+    "a": "",
+    "o": "",
+    "e": "",
+    "i": "",
+    "u": "",
+    "v": "",
+    "er": "",
+    "ai": "",
+    "ei": "",
+    "ao": "",
+    "iao": "",
+    "ia": "",
+    "ua": "",
+    "ie": "",
+    "uo": "",
+    "ve": "",
+    "uai": "",
+    "uei": ""
+  }
+};
+
+/* ============================================================
+   🎧 FILE ÂM THANH (MP3) — mặc định trỏ tới file "<mã track>.mp3"
+   đặt CÙNG THƯ MỤC với file HTML này trên GitHub (không cần sửa code).
+   ------------------------------------------------------------
+   Ví dụ: track 01-4 -> "01-4.mp3". Chỉ cần up đúng tên file mp3
+   lên cùng thư mục/cùng repo với file HTML là chạy được luôn.
+   Muốn dùng link GitHub raw đầy đủ thay vì file cùng thư mục:
+   xoá tên file, dán link raw vào giữa "".
+   Để trống "" = track đó chưa có file, nút nghe sẽ ẩn đi, không lỗi.
+
+   Đối chiếu track với đúng phần bài học:
+   01-4  → lý thuyết Thanh điệu (tab 4)
+   01-5  → luyện đọc phân biệt thanh điệu (tab 4)
+   01-6  → từ vựng 1 âm tiết (tab 5)
+   01-1  → luyện đọc 1 âm tiết (tab 5)
+   01-7  → từ vựng 2 âm tiết (tab 6)
+   01-2  → luyện đọc 2 âm tiết (tab 6)
+   01-8  → luyện đọc biến điệu thanh 3 (tab 7)
+============================================================ */
+var AUDIO_LINKS = {
+  "01-4": "01-4.mp3",
+  "01-5": "01-5.mp3",
+  "01-6": "01-6.mp3",
+  "01-1": "01-1.mp3",
+  "01-7": "01-7.mp3",
+  "01-2": "01-2.mp3",
+  "01-8": "01-8.mp3"
+};
+
+var TONES = [
+  { n:1, code:"55", desc:"bằng cao", mark:"ˉ", color:"var(--red)", path:"M8,16 L52,16",
+    hz:"妈", py:"mā", vn:"mẹ", emoji:"👩" },
+  { n:2, code:"35", desc:"đi lên", mark:"ˊ", color:"var(--gold-dark)", path:"M8,40 L52,10",
+    hz:"麻", py:"má", vn:"cây gai", emoji:"🌿" },
+  { n:3, code:"214", desc:"xuống rồi lên", mark:"ˇ", color:"var(--jade-dark)", path:"M8,26 C20,26 22,54 30,54 C38,54 40,14 52,10",
+    hz:"马", py:"mǎ", vn:"con ngựa", emoji:"🐴" },
+  { n:4, code:"51", desc:"đi xuống", mark:"ˋ", color:"var(--navy)", path:"M8,8 L52,50",
+    hz:"骂", py:"mà", vn:"mắng", emoji:"😠" }
+];
+
+var TONE_DRILL_SIMPLE = [
+  [["ā","啊"],["á","啊"],["ǎ","啊"],["à","啊"]],
+  [["ō","噢"],["ó","哦"],["ǒ","嚄"],["ò","哦"]],
+  [["ē","诶"],["é","额"],["ě","诶"],["è","饿"]],
+  [["ī","一"],["í","姨"],["ǐ","以"],["ì","意"]],
+  [["ū","乌"],["ú","无"],["ǔ","五"],["ù","误"]],
+  [["ǖ","迂"],["ǘ","鱼"],["ǚ","雨"],["ǜ","玉"]]
+];
+
+var SINGLE_WORDS = [
+  {py:"yī", hz:"衣", vn:"áo", emoji:"👕"},
+  {py:"wǔ", hz:"五", vn:"số 5", emoji:"5️⃣"},
+  {py:"yú", hz:"鱼", vn:"cá", emoji:"🐟"},
+  {py:"ěr", hz:"耳", vn:"tai", emoji:"👂"},
+  {py:"bǐ", hz:"笔", vn:"bút", emoji:"✏️"},
+  {py:"māo", hz:"猫", vn:"mèo", emoji:"🐱"},
+  {py:"dǎo", hz:"岛", vn:"đảo", emoji:"🏝️"},
+  {py:"huā", hz:"花", vn:"hoa", emoji:"🌸"},
+  {py:"jī", hz:"鸡", vn:"gà", emoji:"🐔"},
+  {py:"qī", hz:"七", vn:"số 7", emoji:"7️⃣"},
+  {py:"xié", hz:"鞋", vn:"giày", emoji:"👟"},
+  {py:"xuě", hz:"雪", vn:"tuyết", emoji:"❄️"}
+];
+
+var SINGLE_DRILL = [
+  [["mā","妈"],["má","麻"],["mǎ","马"],["mà","骂"]],
+  [["bā","八"],["bá","拔"],["bǎ","把"],["bà","爸"]],
+  [["fēi","飞"],["féi","肥"],["fěi","匪"],["fèi","费"]],
+  [["qiē","切"],["qié","茄"],["qiě","且"],["qiè","窃"]],
+  [["xuē","靴"],["xué","学"],["xuě","雪"],["xuè","血"]],
+  [["tiāo","挑"],["tiáo","条"],["tiǎo","窕"],["tiào","跳"]],
+  [["huō","豁"],["huó","活"],["huǒ","火"],["huò","或"]],
+  [["māo","猫"],["máo","毛"],["mǎo","卯"],["mào","帽"]]
+];
+
+var COMPOUND_WORDS = [
+  {py:"kāfēi", hz:"咖啡", vn:"cà phê", emoji:"☕"},
+  {py:"kělè", hz:"可乐", vn:"cô-ca", emoji:"🥤"},
+  {py:"kǎoyā", hz:"烤鸭", vn:"vịt quay", emoji:"🦆"},
+  {py:"huǒguō", hz:"火锅", vn:"lẩu", emoji:"🍲"},
+  {py:"dìtú", hz:"地图", vn:"bản đồ", emoji:"🗺️"},
+  {py:"fēijī", hz:"飞机", vn:"máy bay", emoji:"✈️"},
+  {py:"máobǐ", hz:"毛笔", vn:"bút lông", emoji:"🖌️"},
+  {py:"ěrjī", hz:"耳机", vn:"tai nghe", emoji:"🎧"}
+];
+
+var COMPOUND_DRILL = [
+  {py:"xià yǔ", hz:"下雨", vn:"trời mưa"},
+  {py:"xiàwǔ", hz:"下午", vn:"buổi chiều"},
+  {py:"tèbié", hz:"特别", vn:"đặc biệt"},
+  {py:"dì yī", hz:"第一", vn:"thứ nhất"},
+  {py:"yěxǔ", hz:"也许", vn:"có lẽ"},
+  {py:"pǎobù", hz:"跑步", vn:"chạy bộ"},
+  {py:"huídá", hz:"回答", vn:"trả lời"},
+  {py:"tiàowǔ", hz:"跳舞", vn:"nhảy múa"},
+  {py:"yìqǐ", hz:"一起", vn:"cùng nhau"},
+  {py:"kuàilè", hz:"快乐", vn:"vui vẻ"},
+  {py:"qítā", hz:"其他", vn:"cái khác"},
+  {py:"biǎodá", hz:"表达", vn:"biểu đạt"},
+  {py:"lǐwù", hz:"礼物", vn:"quà tặng"},
+  {py:"jīhuì", hz:"机会", vn:"cơ hội"},
+  {py:"líkāi", hz:"离开", vn:"rời đi"},
+  {py:"fùxí", hz:"复习", vn:"ôn tập"},
+  {py:"dìtú", hz:"地图", vn:"bản đồ"},
+  {py:"dìtiě", hz:"地铁", vn:"tàu điện ngầm"},
+  {py:"àihào", hz:"爱好", vn:"sở thích"},
+  {py:"jiēdào", hz:"街道", vn:"đường phố"}
+];
+
+/* [syll1, hz1, syll2, hz2, vn] — for tone-3 sandhi drill */
+var SANDHI_WORDS = [
+  ["nǐ","你","hǎo","好","xin chào"],
+  ["kě","可","yǐ","以","có thể"],
+  ["fǔ","辅","dǎo","导","phụ đạo"],
+  ["xiǎo","小","jiě","姐","chị (xưng hô)"],
+  ["kǒu","口","yǔ","语","khẩu ngữ"],
+  ["yǔ","语","fǎ","法","ngữ pháp"],
+  ["mǔ","母","yǔ","语","tiếng mẹ đẻ"],
+  ["tǎo","讨","hǎo","好","lấy lòng"],
+  ["liǎo","了","jiě","解","hiểu rõ"],
+  ["yǒu","友","hǎo","好","thân thiện"],
+  ["yǔ","雨","sǎn","伞","ô/dù"],
+  ["shǒu","手","biǎo","表","đồng hồ đeo tay"]
+];
+
+/* ============================================================
+   TTS ENGINE
+============================================================ */
+var ttsRate = 0.85;
+var voicesReady = false;
+var zhVoice = null;
+
+function loadVoices(){
+  if(!("speechSynthesis" in window)) return;
+  var voices = window.speechSynthesis.getVoices();
+  if(voices && voices.length){
+    zhVoice = voices.find(function(v){ return v.lang === "zh-CN"; }) ||
+              voices.find(function(v){ return v.lang && v.lang.indexOf("zh") === 0; }) || null;
+    voicesReady = true;
+  }
+}
+if("speechSynthesis" in window){
+  loadVoices();
+  window.speechSynthesis.onvoiceschanged = loadVoices;
+}
+
+function speak(text, rate){
+  if(!("speechSynthesis" in window) || !text) return;
+  window.speechSynthesis.cancel();
+  var u = new SpeechSynthesisUtterance(text);
+  u.lang = "zh-CN";
+  u.rate = rate || ttsRate;
+  if(zhVoice) u.voice = zhVoice;
+  window.speechSynthesis.speak(u);
+}
+
+// ---- Phát audio thu âm riêng cho từng thẻ (file tên = đúng chữ Hán hiển thị + .mp3,
+//      đặt CÙNG THƯ MỤC với file HTML). Nếu chưa có file, tự chuyển sang giọng máy TTS. ----
+function playCardAudio(hz, rate){
+  if(!hz) return;
+  var audio = new Audio(encodeURIComponent(hz) + ".mp3");
+  var fellBack = false;
+  function fallback(){
+    if(fellBack) return;
+    fellBack = true;
+    speak(hz, rate);
+  }
+  audio.addEventListener("error", fallback);
+  audio.playbackRate = rate || 1;
+  var p = audio.play();
+  if(p && p.catch) p.catch(fallback);
+}
+
+function speakSequence(list, rate, gap){
+  if(!("speechSynthesis" in window) || !list.length) return;
+  window.speechSynthesis.cancel();
+  gap = gap || 260;
+  var i = 0;
+  function next(){
+    if(i >= list.length) return;
+    var u = new SpeechSynthesisUtterance(list[i]);
+    u.lang = "zh-CN";
+    u.rate = rate || ttsRate;
+    if(zhVoice) u.voice = zhVoice;
+    u.onend = function(){ i++; setTimeout(next, gap); };
+    window.speechSynthesis.speak(u);
+  }
+  next();
+}
+
+function toggleSpeechPause(btn){
+  if(!("speechSynthesis" in window)) return;
+  var synth = window.speechSynthesis;
+  if(synth.speaking && !synth.paused){
+    synth.pause();
+    btn.textContent = "▶ Tiếp tục";
+  } else if(synth.paused){
+    synth.resume();
+    btn.textContent = "⏸ Tạm dừng";
+  }
+}
+
+function makeSpeedGroup(container, onChange){
+  var speeds = [ {l:"0.6x", v:0.6}, {l:"0.85x", v:0.85, def:true}, {l:"1x", v:1} ];
+  speeds.forEach(function(s){
+    var b = document.createElement("button");
+    b.textContent = s.l;
+    if(s.def) b.className = "active";
+    b.addEventListener("click", function(){
+      container.querySelectorAll("button").forEach(function(x){ x.classList.remove("active"); });
+      b.classList.add("active");
+      if(onChange) onChange(s.v);
+    });
+    container.appendChild(b);
+  });
+}
+
+/* tone3 -> tone2 diacritic conversion, for sandhi "cách đọc thực tế" */
+var T3_TO_T2 = { "ǎ":"á","ě":"é","ǐ":"í","ǒ":"ó","ǔ":"ú","ǚ":"ǘ" };
+function toTone2(syll){
+  return syll.replace(/[ǎěǐǒǔǚ]/g, function(m){ return T3_TO_T2[m]; });
+}
+
+/* Convert a base64 data URI to a Blob URL — more reliable playback
+   across browsers (especially Safari/iOS) than a raw data-URI source. */
+function dataURItoBlobURL(dataURI){
+  try {
+    var parts = dataURI.split(',');
+    var mimeMatch = parts[0].match(/:(.*?);/);
+    var mime = mimeMatch ? mimeMatch[1] : 'video/mp4';
+    var byteString = atob(parts[1]);
+    var ab = new ArrayBuffer(byteString.length);
+    var ia = new Uint8Array(ab);
+    for (var i = 0; i < byteString.length; i++){
+      ia[i] = byteString.charCodeAt(i);
+    }
+    var blob = new Blob([ia], {type: mime});
+    return URL.createObjectURL(blob);
+  } catch(e){
+    return dataURI;
+  }
+}
+
+/* ============================================================
+   VIDEO MODAL (per-letter pronunciation demo)
+============================================================ */
+var videoModalEl = document.getElementById("video-modal");
+var videoModalPlayer = document.getElementById("video-modal-player");
+var videoModalTitle = document.getElementById("video-modal-title");
+var videoModalTts = document.getElementById("video-modal-tts");
+
+function openVideoModal(src, titleHtml, ttsText){
+  videoModalTitle.innerHTML = titleHtml;
+  videoModalPlayer.src = src;
+  videoModalTts.onclick = function(){ speak(ttsText); };
+  videoModalEl.classList.add("open");
+  videoModalPlayer.play().catch(function(){ /* file chưa tồn tại — im lặng, người dùng vẫn có nút nghe giọng máy */ });
+}
+function closeVideoModal(){
+  videoModalPlayer.pause();
+  videoModalEl.classList.remove("open");
+}
+document.getElementById("video-modal-close").addEventListener("click", closeVideoModal);
+document.getElementById("video-modal-backdrop").addEventListener("click", closeVideoModal);
+document.addEventListener("keydown", function(e){ if(e.key === "Escape") closeVideoModal(); });
+
+/* ============================================================
+   RENDERERS
+============================================================ */
+
+// ---- ROADMAP (overview tab quick-nav) ----
+var ROAD = [
+  {zh:"声母", vn:"Thanh mẫu", d:"14 phụ âm đầu", panel:"p-initials"},
+  {zh:"韵母", vn:"Vận mẫu", d:"18 vần cơ bản", panel:"p-finals"},
+  {zh:"声调", vn:"Thanh điệu", d:"4 thanh + so sánh tiếng Việt", panel:"p-tones"},
+  {zh:"单音节", vn:"Từ đơn", d:"Luyện đọc 1 âm tiết", panel:"p-single"},
+  {zh:"双音节", vn:"Từ ghép", d:"Luyện đọc 2 âm tiết", panel:"p-compound"},
+  {zh:"变调", vn:"Biến điệu thanh 3", d:"Quy tắc 3+3 → 2+3", panel:"p-sandhi"}
+];
+(function renderRoadmap(){
+  var wrap = document.getElementById("roadmap");
+  ROAD.forEach(function(r){
+    var el = document.createElement("div");
+    el.className = "road-card";
+    el.innerHTML = '<div class="rn zh">'+r.zh+'</div><div class="rt">'+r.vn+'</div><div class="rd">'+r.d+'</div>';
+    el.addEventListener("click", function(){ activatePanel(r.panel); });
+    wrap.appendChild(el);
+  });
+})();
+
+// ---- Load all 7 audio tracks from AUDIO_LINKS (if a link was pasted in) ----
+(function loadAudioLinks(){
+  Object.keys(AUDIO_LINKS).forEach(function(key){
+    var link = AUDIO_LINKS[key];
+    var el = document.getElementById("audio-"+key);
+    if (!el) return;
+    if (link && link.trim()){
+      el.src = link.trim();
+    } else {
+      // no link yet — hide the whole audio-player pill so nothing broken shows
+      var wrap = el.closest(".audio-player");
+      if (wrap) wrap.style.display = "none";
+    }
+  });
+})();
+
+// ---- QUICK NAV (mục lục nhỏ dẫn tới từng khung nội dung) ----
+function buildQuickNav(containerId, items){
+  var nav = document.getElementById(containerId);
+  if(!nav) return;
+  items.forEach(function(item){
+    var btn = document.createElement("button");
+    btn.type = "button";
+    btn.className = "quick-nav-btn";
+    btn.innerHTML = '<span class="dot" style="background:'+item.color+'"></span>'+item.label;
+    btn.addEventListener("click", function(){
+      var target = document.getElementById(item.id);
+      if(target) target.scrollIntoView({behavior:"smooth", block:"start"});
+    });
+    nav.appendChild(btn);
+  });
+}
+
+// ---- INITIALS ----
+(function renderInitials(){
+  var wrap = document.getElementById("initials-wrap");
+  INITIAL_GROUPS.forEach(function(g, gi){
+    var groupFrame = document.createElement("div");
+    groupFrame.className = "frame group-frame";
+    groupFrame.id = "init-g" + gi;
+    groupFrame.style.borderLeft = "6px solid " + g.color;
+    wrap.appendChild(groupFrame);
+
+    var gt = document.createElement("div");
+    gt.className = "group-title";
+    gt.innerHTML = '<span class="dot" style="background:'+g.color+'"></span>' +
+      '<h4><span class="zh">'+g.zh+'</span> · '+g.vn+'<span class="desc">— '+g.desc+'</span></h4>';
+    groupFrame.appendChild(gt);
+
+    var grid = document.createElement("div");
+    grid.className = "grid-cards";
+    g.items.forEach(function(it){
+      var chip = document.createElement("div");
+      chip.className = "chip collapsible";
+
+      var embedded = (EMBEDDED_VIDEOS["thanh-mau"] || {})[it.sym];
+      var ghLink = (VIDEO_LINKS["thanh-mau"] || {})[it.sym];
+      var hasVideo = embedded || (ghLink && ghLink.trim());
+      var videoBoxHtml;
+      if (hasVideo){
+        videoBoxHtml = '<div class="chip-video-box"><video class="embedded-video" controls playsinline webkit-playsinline preload="metadata"></video></div>';
+      } else {
+        videoBoxHtml = '<div class="chip-video-box"><div class="chip-video-placeholder"><span class="cvp-icon">🔊</span><span class="cvp-text">Chưa có video<br>Bấm để nghe</span></div></div>';
+      }
+
+      chip.innerHTML =
+        videoBoxHtml +
+        '<div class="main-sym">'+it.sym+'</div>' +
+        '<button type="button" class="tip-toggle" aria-expanded="false">Xem cách đọc <span class="chev">▾</span></button>' +
+        '<div class="tip">'+it.tip+'</div>';
+
+      var toggleBtn = chip.querySelector(".tip-toggle");
+      toggleBtn.addEventListener("click", function(){
+        var isOpen = chip.classList.toggle("open");
+        toggleBtn.setAttribute("aria-expanded", isOpen ? "true" : "false");
+        toggleBtn.innerHTML = isOpen
+          ? 'Ẩn cách đọc <span class="chev">▾</span>'
+          : 'Xem cách đọc <span class="chev">▾</span>';
+      });
+
+      if (hasVideo){
+        var vidEl = chip.querySelector(".embedded-video");
+        vidEl.src = embedded ? dataURItoBlobURL(embedded) : ghLink.trim();
+        vidEl.addEventListener("error", function(){
+          var box = this.parentElement;
+          box.innerHTML = '<div class="chip-video-placeholder" style="border-style:solid;"><span class="cvp-icon">⚠️</span><span class="cvp-text">Máy này không phát được video<br>Thử trình duyệt/máy khác</span></div>';
+        });
+      } else {
+        var ph = chip.querySelector(".chip-video-placeholder");
+        ph.addEventListener("click", function(){ speak(it.exHz); });
+      }
+      grid.appendChild(chip);
+    });
+    groupFrame.appendChild(grid);
+  });
+
+  var initNavItems = INITIAL_GROUPS.map(function(g, gi){
+    return { id:"init-g"+gi, label:g.vn, color:g.color };
+  });
+  initNavItems.push({ id:"init-confuse", label:"Phân biệt dễ nhầm", color:"var(--red)" });
+  initNavItems.push({ id:"init-mistake", label:"Lỗi hay mắc phải", color:"var(--gold-dark)" });
+  buildQuickNav("initials-quicknav", initNavItems);
+})();
+
+// ---- FINALS ----
+(function renderFinals(){
+  var wrap = document.getElementById("finals-wrap");
+  FINAL_GROUPS.forEach(function(g, gi){
+    var groupFrame = document.createElement("div");
+    groupFrame.className = "frame group-frame";
+    groupFrame.id = "final-g" + gi;
+    groupFrame.style.borderLeft = "6px solid " + g.color;
+    wrap.appendChild(groupFrame);
+
+    var gt = document.createElement("div");
+    gt.className = "group-title";
+    gt.innerHTML = '<span class="dot" style="background:'+g.color+'"></span>' +
+      '<h4><span class="zh">'+g.zh+'</span> · '+g.vn+'<span class="desc">— '+g.desc+'</span></h4>';
+    groupFrame.appendChild(gt);
+
+    var grid = document.createElement("div");
+    grid.className = "grid-cards";
+    g.items.forEach(function(it){
+      var chip = document.createElement("div");
+      chip.className = "chip collapsible";
+      var spoken = it.sym.replace(" (ui)","");
+
+      var embedded = (EMBEDDED_VIDEOS["van-mau"] || {})[it.slug];
+      var ghLink = (VIDEO_LINKS["van-mau"] || {})[it.slug];
+      var hasVideo = embedded || (ghLink && ghLink.trim());
+      var videoBoxHtml;
+      if (hasVideo){
+        videoBoxHtml = '<div class="chip-video-box"><video class="embedded-video" controls playsinline webkit-playsinline preload="metadata"></video></div>';
+      } else {
+        videoBoxHtml = '<div class="chip-video-box"><div class="chip-video-placeholder"><span class="cvp-icon">🔊</span><span class="cvp-text">Chưa có video<br>Bấm để nghe</span></div></div>';
+      }
+
+      chip.innerHTML =
+        videoBoxHtml +
+        '<div class="main-sym">'+it.sym+'</div>' +
+        '<button type="button" class="tip-toggle" aria-expanded="false">Xem cách đọc <span class="chev">▾</span></button>' +
+        '<div class="tip">'+it.tip+'</div>';
+
+      var toggleBtn2 = chip.querySelector(".tip-toggle");
+      toggleBtn2.addEventListener("click", function(){
+        var isOpen = chip.classList.toggle("open");
+        toggleBtn2.setAttribute("aria-expanded", isOpen ? "true" : "false");
+        toggleBtn2.innerHTML = isOpen
+          ? 'Ẩn cách đọc <span class="chev">▾</span>'
+          : 'Xem cách đọc <span class="chev">▾</span>';
+      });
+
+      if (hasVideo){
+        var vidEl2 = chip.querySelector(".embedded-video");
+        vidEl2.src = embedded ? dataURItoBlobURL(embedded) : ghLink.trim();
+        vidEl2.addEventListener("error", function(){
+          var box = this.parentElement;
+          box.innerHTML = '<div class="chip-video-placeholder" style="border-style:solid;"><span class="cvp-icon">⚠️</span><span class="cvp-text">Máy này không phát được video<br>Thử trình duyệt/máy khác</span></div>';
+        });
+      } else {
+        var ph = chip.querySelector(".chip-video-placeholder");
+        ph.addEventListener("click", function(){ speak(spoken); });
+      }
+      grid.appendChild(chip);
+    });
+    groupFrame.appendChild(grid);
+  });
+
+  var finalNavItems = FINAL_GROUPS.map(function(g, gi){
+    var shortLabel = g.vn.indexOf("—") > -1 ? g.vn.split("—")[1].trim() : g.vn;
+    return { id:"final-g"+gi, label:shortLabel, color:g.color };
+  });
+  finalNavItems.push({ id:"final-mistake", label:"Lỗi hay mắc phải", color:"var(--gold-dark)" });
+  buildQuickNav("finals-quicknav", finalNavItems);
+})();
+
+// ---- TONE CARDS ----
+(function renderToneCards(){
+  var wrap = document.getElementById("tone-cards");
+  TONES.forEach(function(t){
+    var card = document.createElement("div");
+    card.className = "tone-card";
+    card.innerHTML =
+      '<div class="label"><span class="zh">第'+t.n+'声</span> — Thanh '+t.n+'</div>' +
+      '<div class="value">('+t.code+') — '+t.desc+'</div>' +
+      '<svg viewBox="0 0 60 60" preserveAspectRatio="none">' +
+        '<line x1="6" y1="6" x2="6" y2="56" stroke="#ddd" stroke-width="1"/>' +
+        '<line x1="6" y1="6" x2="54" y2="6" stroke="#eee" stroke-width="1"/>' +
+        '<line x1="6" y1="16.6" x2="54" y2="16.6" stroke="#eee" stroke-width="1"/>' +
+        '<line x1="6" y1="27.3" x2="54" y2="27.3" stroke="#eee" stroke-width="1"/>' +
+        '<line x1="6" y1="38" x2="54" y2="38" stroke="#eee" stroke-width="1"/>' +
+        '<line x1="6" y1="48.6" x2="54" y2="48.6" stroke="#eee" stroke-width="1"/>' +
+        '<line x1="6" y1="56" x2="54" y2="56" stroke="#eee" stroke-width="1"/>' +
+        '<path d="'+t.path+'" fill="none" stroke="'+t.color+'" stroke-width="4" stroke-linecap="round"/>' +
+      '</svg>' +
+      '<div class="example">' +
+        '<span class="emoji">'+t.emoji+'</span><br>' +
+        '<span class="hz">'+t.hz+'</span> <span class="py" style="color:'+t.color+'">'+t.py+'</span><br>' +
+        '<span class="vn">'+t.vn+'</span>' +
+      '</div>' +
+      '<div class="spk">🔊 bấm để nghe</div>';
+    card.style.cursor = "pointer";
+    card.addEventListener("click", function(){ playCardAudio(t.hz); });
+    wrap.appendChild(card);
+  });
+})();
+
+// ---- helper: draw-lots reading drill — shows ONE item at a time, in given order (dễ → khó) ----
+function buildDrawDrill(container, items, renderFn, getRate){
+  container.classList.remove("tone-set-grid","word-grid","word-grid-pic");
+  container.style.display = "block";
+  container.innerHTML = "";
+  var total = items.length;
+  var idx = 0;
+
+  var wrap = document.createElement("div");
+  wrap.className = "draw-wrap";
+  var progress = document.createElement("div");
+  progress.className = "draw-progress";
+  progress.innerHTML = 'Bộ <span class="dw-pos">1</span> / '+total+'<div class="bar"><div class="bar-fill"></div></div>';
+  var cardEl = document.createElement("div");
+  var nav = document.createElement("div");
+  nav.className = "draw-nav";
+  nav.innerHTML =
+    '<button class="btn dw-prev" type="button">◀ Xem lại</button>' +
+    '<button class="btn primary dw-next" type="button">🎲 Bốc thăm tiếp</button>';
+  wrap.appendChild(progress);
+  wrap.appendChild(cardEl);
+  wrap.appendChild(nav);
+  container.appendChild(wrap);
+
+  var posEl = progress.querySelector(".dw-pos");
+  var barFill = progress.querySelector(".bar-fill");
+  var prevBtn = nav.querySelector(".dw-prev");
+  var nextBtn = nav.querySelector(".dw-next");
+
+  function renderCard(){
+    if(idx >= total){
+      cardEl.className = "draw-done";
+      cardEl.innerHTML = '<div class="dd-icon">🎉</div><div class="dd-text">Đã bốc thăm hết '+total+' bộ!</div>';
+      posEl.textContent = total;
+      barFill.style.width = "100%";
+      nextBtn.textContent = "🔁 Luyện lại từ đầu";
+      prevBtn.style.display = "inline-flex";
+      return;
+    }
+    cardEl.className = "draw-card";
+    cardEl.innerHTML = "";
+    renderFn(items[idx], cardEl, getRate);
+    posEl.textContent = (idx+1);
+    barFill.style.width = (((idx+1)/total)*100)+"%";
+    nextBtn.textContent = (idx === total-1) ? "🎲 Bốc thăm (bộ cuối)" : "🎲 Bốc thăm tiếp";
+    prevBtn.style.display = idx===0 ? "none" : "inline-flex";
+  }
+
+  prevBtn.addEventListener("click", function(){ if(idx>0){ idx--; renderCard(); } });
+  nextBtn.addEventListener("click", function(){
+    if(idx >= total){ idx = 0; renderCard(); return; }
+    idx++; renderCard();
+  });
+  renderCard();
+}
+
+function renderToneSetCard(set, cardEl, getRate){
+  cardEl.classList.add("tone-set","draw-set");
+  var row = document.createElement("div");
+  row.className = "row";
+  set.forEach(function(pair, i){
+    var py = pair[0], hz = pair[1];
+    var cell = document.createElement("div");
+    cell.className = "tone-syll tone" + (i+1);
+    cell.innerHTML = '<div class="py">'+py+'</div><div class="hz">'+hz+'</div>';
+    cell.addEventListener("click", function(){ playCardAudio(hz, getRate()); });
+    row.appendChild(cell);
+  });
+  cardEl.appendChild(row);
+}
+
+function renderWordDrawCard(w, cardEl, getRate){
+  cardEl.classList.add("word-card","word-card-flash");
+  var pyShow = w.py_display || w.py;
+  cardEl.innerHTML =
+    (w.emoji ? '<div class="emoji">'+w.emoji+'</div>' : '') +
+    '<div class="hz">'+w.hz+'</div>' +
+    '<div class="py">'+pyShow+'</div>' +
+    '<div class="vn">'+w.vn+'</div>' +
+    '<div class="spk-btn">🔊 nghe</div>';
+  cardEl.onclick = function(){ playCardAudio(w.hz, getRate ? getRate() : ttsRate); };
+}
+
+// ---- TONE DRILL (tab 4) ----
+var toneDrillRate = { v: 0.85 };
+makeSpeedGroup(document.getElementById("speed-group-tone"), function(v){ toneDrillRate.v = v; });
+buildDrawDrill(document.getElementById("tone-drill-simple"), TONE_DRILL_SIMPLE, renderToneSetCard, function(){ return toneDrillRate.v; });
+
+buildQuickNav("tones-quicknav", [
+  { id:"tone-basic",   label:"4 thanh cơ bản",        color:"var(--red)" },
+  { id:"tone-compare", label:"So sánh tiếng Việt",    color:"var(--navy)" },
+  { id:"tone-drill",   label:"Luyện đọc phân biệt",   color:"var(--gold-dark)" }
+]);
+
+// ---- WORD CARD renderer (dùng cho hàm cũ nếu còn nơi khác gọi) ----
+function buildWordGrid(container, words, getRate){
+  words.forEach(function(w){
+    var card = document.createElement("div");
+    card.className = "word-card";
+    var pyShow = w.py_display || w.py;
+    card.innerHTML =
+      '<div class="emoji">'+w.emoji+'</div>' +
+      '<div class="hz">'+w.hz+'</div>' +
+      '<div class="py">'+pyShow+'</div>' +
+      '<div class="vn">'+w.vn+'</div>' +
+      '<div class="spk-btn">🔊 nghe</div>';
+    card.addEventListener("click", function(){ playCardAudio(w.hz, getRate ? getRate() : ttsRate); });
+    container.appendChild(card);
+  });
+}
+
+function shuffleArray(arr){
+  var a = arr.slice();
+  for(var i=a.length-1; i>0; i--){
+    var j = Math.floor(Math.random()*(i+1));
+    var t=a[i]; a[i]=a[j]; a[j]=t;
+  }
+  return a;
+}
+
+// ---- FLASHCARD (xem hình từng thẻ — trước / xáo trộn / sau) ----
+function buildFlashcards(container, words, getRate){
+  container.classList.remove("word-grid","word-grid-pic");
+  container.style.display = "block";
+  container.innerHTML = "";
+  var order = words.map(function(_, i){ return i; });
+  var idx = 0;
+
+  var wrap = document.createElement("div");
+  wrap.className = "flashcard-wrap";
+  var progress = document.createElement("div");
+  progress.className = "flashcard-progress";
+  progress.innerHTML = '<span class="fc-pos">1</span> / '+words.length;
+  var cardEl = document.createElement("div");
+  var nav = document.createElement("div");
+  nav.className = "flashcard-nav";
+  nav.innerHTML =
+    '<button class="btn fc-prev" type="button">◀ Trước</button>' +
+    '<button class="btn fc-shuffle" type="button">🔀 Xáo trộn</button>' +
+    '<button class="btn primary fc-next" type="button">Sau ▶</button>';
+  wrap.appendChild(progress);
+  wrap.appendChild(cardEl);
+  wrap.appendChild(nav);
+  container.appendChild(wrap);
+
+  var posEl = progress.querySelector(".fc-pos");
+
+  function render(){
+    var w = words[order[idx]];
+    var pyShow = w.py_display || w.py;
+    cardEl.className = "word-card word-card-flash";
+    cardEl.innerHTML =
+      '<div class="emoji">'+w.emoji+'</div>' +
+      '<div class="hz">'+w.hz+'</div>' +
+      '<div class="py">'+pyShow+'</div>' +
+      '<div class="vn">'+w.vn+'</div>' +
+      '<div class="spk-btn">🔊 nghe</div>';
+    posEl.textContent = (idx+1);
+    cardEl.onclick = function(){ playCardAudio(w.hz, getRate ? getRate() : ttsRate); };
+  }
+
+  wrap.querySelector(".fc-prev").addEventListener("click", function(){
+    idx = (idx - 1 + order.length) % order.length; render();
+  });
+  wrap.querySelector(".fc-next").addEventListener("click", function(){
+    idx = (idx + 1) % order.length; render();
+  });
+  wrap.querySelector(".fc-shuffle").addEventListener("click", function(){
+    order = shuffleArray(order); idx = 0; render();
+  });
+  render();
+}
+
+// ---- SINGLE WORDS (tab 5) ----
+buildFlashcards(document.getElementById("single-word-grid"), SINGLE_WORDS, function(){ return 0.85; });
+var pauseSingleBtn = document.getElementById("pause-single-all");
+document.getElementById("play-single-all").addEventListener("click", function(){
+  pauseSingleBtn.textContent = "⏸ Tạm dừng";
+  speakSequence(SINGLE_WORDS.map(function(w){ return w.hz; }), 0.85, 500);
+});
+pauseSingleBtn.addEventListener("click", function(){ toggleSpeechPause(pauseSingleBtn); });
+
+var singleDrillRate = { v: 0.85 };
+makeSpeedGroup(document.getElementById("speed-group-single"), function(v){ singleDrillRate.v = v; });
+buildDrawDrill(document.getElementById("single-drill-grid"), SINGLE_DRILL, renderToneSetCard, function(){ return singleDrillRate.v; });
+
+// ---- COMPOUND WORDS (tab 6) ----
+buildFlashcards(document.getElementById("compound-word-grid"), COMPOUND_WORDS, function(){ return 0.85; });
+var pauseCompoundBtn = document.getElementById("pause-compound-all");
+document.getElementById("play-compound-all").addEventListener("click", function(){
+  pauseCompoundBtn.textContent = "⏸ Tạm dừng";
+  speakSequence(COMPOUND_WORDS.map(function(w){ return w.hz; }), 0.85, 550);
+});
+pauseCompoundBtn.addEventListener("click", function(){ toggleSpeechPause(pauseCompoundBtn); });
+
+var compoundDrillRate = { v: 0.85 };
+makeSpeedGroup(document.getElementById("speed-group-compound"), function(v){ compoundDrillRate.v = v; });
+buildDrawDrill(document.getElementById("compound-drill-grid"), COMPOUND_DRILL, renderWordDrawCard, function(){ return compoundDrillRate.v; });
+
+// ---- SANDHI GRID (tab 7) ----
+var sandhiRate = { v: 0.85 };
+makeSpeedGroup(document.getElementById("speed-group-sandhi"), function(v){ sandhiRate.v = v; });
+(function renderSandhi(){
+  var wrap = document.getElementById("sandhi-grid");
+  SANDHI_WORDS.forEach(function(item){
+    var s1 = item[0], h1 = item[1], s2 = item[2], h2 = item[3], vn = item[4];
+    var written = s1 + " " + s2;
+    var spoken = toTone2(s1) + " " + s2;
+    var card = document.createElement("div");
+    card.className = "sandhi-card";
+    card.innerHTML =
+      '<div class="hz">'+h1+h2+'</div>' +
+      '<div class="written">Viết: <span class="strike"></span>'+written+'</div>' +
+      '<div class="spoken">Đọc: '+spoken+'</div>' +
+      '<div class="vn">'+vn+'</div>';
+    card.addEventListener("click", function(){ playCardAudio(h1+h2, sandhiRate.v); });
+    wrap.appendChild(card);
+  });
+})();
+
+/* ============================================================
+   TAB SWITCHING
+============================================================ */
+function activatePanel(id){
+  document.querySelectorAll(".panel").forEach(function(p){ p.classList.remove("active"); });
+  document.querySelectorAll(".side-btn").forEach(function(b){ b.classList.remove("active"); });
+  document.getElementById(id).classList.add("active");
+  document.querySelector('.side-btn[data-panel="'+id+'"]').classList.add("active");
+  window.scrollTo({top:0, behavior:"instant"});
+  if("speechSynthesis" in window) window.speechSynthesis.cancel();
+}
+document.querySelectorAll(".side-btn").forEach(function(btn){
+  btn.addEventListener("click", function(){
+    activatePanel(btn.getAttribute("data-panel"));
+    if(window.innerWidth <= 900) setSidebar(false);
+  });
+});
+
+// ---- Confusable-pair letters: click to hear ----
+document.querySelectorAll(".vs-letter[data-hz]").forEach(function(el){
+  el.addEventListener("click", function(){ speak(el.getAttribute("data-hz")); });
+});
+
+/* ============================================================
+   SIDEBAR OPEN/CLOSE
+============================================================ */
+var sidebarEl = document.getElementById("sidebar");
+var sidebarBackdropEl = document.getElementById("sidebar-backdrop");
+var sidebarToggleEl = document.getElementById("sidebar-toggle");
+
+function setSidebar(open){
+  if(open){
+    sidebarEl.classList.remove("collapsed");
+    if(window.innerWidth <= 900) sidebarBackdropEl.classList.add("show");
+    else sidebarBackdropEl.classList.remove("show");
+  } else {
+    sidebarEl.classList.add("collapsed");
+    sidebarBackdropEl.classList.remove("show");
+  }
+}
+sidebarToggleEl.addEventListener("click", function(){
+  setSidebar(sidebarEl.classList.contains("collapsed"));
+});
+sidebarBackdropEl.addEventListener("click", function(){ setSidebar(false); });
+
+// Default: open on desktop, closed (overlay) on mobile/narrow screens
+setSidebar(window.innerWidth > 900);
+
+/* ============================================================
+   FULLSCREEN TOGGLE
+============================================================ */
+var fullscreenBtn = document.getElementById("fullscreen-toggle");
+
+function isFullscreen(){
+  return !!(document.fullscreenElement || document.webkitFullscreenElement);
+}
+function updateFullscreenBtn(){
+  fullscreenBtn.classList.toggle("is-fullscreen", isFullscreen());
+  fullscreenBtn.setAttribute("aria-label", isFullscreen() ? "Thoát toàn màn hình" : "Toàn màn hình");
+  fullscreenBtn.title = isFullscreen() ? "Thoát toàn màn hình" : "Toàn màn hình";
+}
+
+function showFsHint(){
+  var old = document.getElementById("fs-hint");
+  if (old) old.remove();
+  var box = document.createElement("div");
+  box.id = "fs-hint";
+  box.style.cssText = "position:fixed; top:calc(var(--header-h) + 10px); right:12px; max-width:280px; z-index:70;"
+    + "background:#fff; color:var(--ink); border:1.5px solid var(--line); border-radius:12px;"
+    + "box-shadow:0 6px 20px var(--shadow); padding:12px 14px; font-size:13.5px; line-height:1.45;";
+  box.innerHTML = "<b>Không mở được toàn màn hình.</b><br>"
+    + "Trình duyệt/ứng dụng xem trước hiện tại có thể chưa hỗ trợ. Trên điện thoại, hãy mở file này bằng "
+    + "<b>Safari</b> hoặc <b>Chrome</b> (không phải trình xem trong ứng dụng), sau đó bấm biểu tượng Chia sẻ → "
+    + "<b>\"Thêm vào MH chính\"</b> để dùng như một ứng dụng toàn màn hình, không còn thanh địa chỉ."
+    + "<div style='text-align:right; margin-top:8px;'><button id='fs-hint-close' style='border:none; background:var(--jade-dark); color:#fff; border-radius:8px; padding:4px 10px; font-size:12.5px; cursor:pointer;'>Đã hiểu</button></div>";
+  document.body.appendChild(box);
+  document.getElementById("fs-hint-close").addEventListener("click", function(){ box.remove(); });
+  setTimeout(function(){ if (document.getElementById("fs-hint")) box.remove(); }, 9000);
+}
+
+fullscreenBtn.addEventListener("click", function(){
+  if (!isFullscreen()){
+    var el = document.documentElement;
+    var request = el.requestFullscreen || el.webkitRequestFullscreen;
+    if (!request){
+      showFsHint();
+      return;
+    }
+    try {
+      var result = request.call(el);
+      if (result && typeof result.catch === "function"){
+        result.catch(function(){ showFsHint(); });
+      } else {
+        // Older WebKit doesn't return a promise — verify shortly after that it actually engaged
+        setTimeout(function(){ if (!isFullscreen()) showFsHint(); }, 400);
+      }
+    } catch(e){
+      showFsHint();
+    }
+  } else {
+    if (document.exitFullscreen) document.exitFullscreen();
+    else if (document.webkitExitFullscreen) document.webkitExitFullscreen();
+  }
+});
+document.addEventListener("fullscreenchange", updateFullscreenBtn);
+document.addEventListener("webkitfullscreenchange", updateFullscreenBtn);
+
+/* ============================================================
+   SCROLL-TO-TOP BUTTON
+============================================================ */
+var scrollTopBtn = document.getElementById("scroll-top-btn");
+var SCROLL_SHOW_AT = 280;
+
+function toggleScrollTopBtn(){
+  if(window.scrollY > SCROLL_SHOW_AT) scrollTopBtn.classList.add("show");
+  else scrollTopBtn.classList.remove("show");
+}
+window.addEventListener("scroll", toggleScrollTopBtn, { passive:true });
+toggleScrollTopBtn();
+
+scrollTopBtn.addEventListener("click", function(){
+  window.scrollTo({ top:0, behavior:"smooth" });
+});
+
+})();
+</script>
+</body>
+</html>
